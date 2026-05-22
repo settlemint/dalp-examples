@@ -1,0 +1,11 @@
+node_modules
+.turbo
+.output
+.vinxi
+.vercel
+dist
+build
+coverage
+*.gen.ts
+routeTree.gen.ts
+bun.lock

@@ -1,0 +1,33 @@
+{
+  "name": "@dalp-examples/dalp-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Thin typed wrapper around the DALP API for use in TanStack Start example apps.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./react": {
+      "types": "./src/react.tsx",
+      "default": "./src/react.tsx"
+    }
+  },
+  "scripts": {
+    "lint": "oxlint -c ../../.oxlintrc.json --deny-warnings src",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo .tsbuildinfo"
+  },
+  "devDependencies": {
+    "@dalp-examples/tsconfig": "workspace:*",
+    "@types/react": "19.0.10",
+    "react": "19.0.0",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}
