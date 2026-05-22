@@ -20,10 +20,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootComponent() {
   return (
     <RootDocument>
-      <DalpProvider
-        url={import.meta.env.VITE_DALP_API_URL ?? ""}
-        apiKey={import.meta.env.VITE_DALP_API_KEY}
-      >
+      <DalpProvider url={import.meta.env.VITE_DALP_API_URL ?? ""} apiKey={import.meta.env.VITE_DALP_API_KEY}>
         <Outlet />
       </DalpProvider>
       {import.meta.env.DEV ? <TanStackRouterDevtools position="bottom-right" /> : null}

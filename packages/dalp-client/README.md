@@ -14,10 +14,7 @@ import { DalpProvider, useDalp } from "@dalp-examples/dalp-client/react";
 
 function App() {
   return (
-    <DalpProvider
-      url={import.meta.env.VITE_DALP_API_URL}
-      apiKey={import.meta.env.VITE_DALP_API_KEY}
-    >
+    <DalpProvider url={import.meta.env.VITE_DALP_API_URL} apiKey={import.meta.env.VITE_DALP_API_KEY}>
       <Whoami />
     </DalpProvider>
   );

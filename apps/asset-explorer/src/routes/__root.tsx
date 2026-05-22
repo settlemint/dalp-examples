@@ -1,11 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import {
-  HeadContent,
-  Link,
-  Outlet,
-  Scripts,
-  createRootRouteWithContext,
-} from "@tanstack/react-router";
+import { HeadContent, Link, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type { ReactNode } from "react";
 import { DalpProvider } from "@dalp-examples/dalp-client/react";
@@ -26,10 +20,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootComponent() {
   return (
     <RootDocument>
-      <DalpProvider
-        url={import.meta.env.VITE_DALP_API_URL ?? ""}
-        apiKey={import.meta.env.VITE_DALP_API_KEY}
-      >
+      <DalpProvider url={import.meta.env.VITE_DALP_API_URL ?? ""} apiKey={import.meta.env.VITE_DALP_API_KEY}>
         <div className="min-h-screen">
           <header className="border-b border-brand-100 bg-brand-50/60 backdrop-blur">
             <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
@@ -37,11 +28,7 @@ function RootComponent() {
                 Asset Explorer
               </Link>
               <nav className="flex gap-4 text-sm">
-                <Link
-                  to="/"
-                  className="hover:underline"
-                  activeProps={{ className: "font-semibold underline" }}
-                >
+                <Link to="/" className="hover:underline" activeProps={{ className: "font-semibold underline" }}>
                   Assets
                 </Link>
               </nav>

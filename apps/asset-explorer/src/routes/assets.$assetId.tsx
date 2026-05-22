@@ -24,19 +24,14 @@ function AssetDetailPage() {
 
   const transfer = useMutation({
     mutationFn: async (input: { to: string; amount: string }) => {
-      const response = await fetch(
-        `${import.meta.env.VITE_DALP_API_URL}/api/assets/${assetId}/transfer`,
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            ...(import.meta.env.VITE_DALP_API_KEY
-              ? { "x-api-key": import.meta.env.VITE_DALP_API_KEY }
-              : {}),
-          },
-          body: JSON.stringify(input),
+      const response = await fetch(`${import.meta.env.VITE_DALP_API_URL}/api/assets/${assetId}/transfer`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(import.meta.env.VITE_DALP_API_KEY ? { "x-api-key": import.meta.env.VITE_DALP_API_KEY } : {}),
         },
-      );
+        body: JSON.stringify(input),
+      });
       if (!response.ok) {
         throw new Error(`Transfer failed (${response.status})`);
       }
@@ -136,9 +131,7 @@ function AssetDetailPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-brand-700">
-          Recent transfers
-        </h2>
+        <h2 className="text-sm font-medium uppercase tracking-wide text-brand-700">Recent transfers</h2>
         <table className="mt-3 w-full overflow-hidden rounded-lg border border-brand-100 text-sm">
           <thead className="bg-brand-50 text-left text-xs uppercase text-brand-700">
             <tr>
@@ -151,9 +144,7 @@ function AssetDetailPage() {
           <tbody>
             {(transfers.data ?? []).map((row) => (
               <tr key={row.id} className="border-t border-brand-100">
-                <td className="px-4 py-2 font-mono text-xs">
-                  {new Date(row.timestamp).toLocaleString()}
-                </td>
+                <td className="px-4 py-2 font-mono text-xs">{new Date(row.timestamp).toLocaleString()}</td>
                 <td className="px-4 py-2 font-mono text-xs">{row.from}</td>
                 <td className="px-4 py-2 font-mono text-xs">{row.to}</td>
                 <td className="px-4 py-2 text-right font-mono">{row.amount}</td>

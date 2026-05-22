@@ -1,5 +1,8 @@
 [install]
 exact = true
+# Supply-chain mitigation (shai-hulud): wait 3 days before pulling new releases.
+minimumReleaseAge = 259200
+minimumReleaseAgeExcludes = ["typescript", "@types/node", "@typescript/native-preview"]
 
 [console]
 depth = 5

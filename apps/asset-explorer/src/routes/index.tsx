@@ -16,15 +16,11 @@ function AssetsListPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-2xl font-semibold">Assets</h1>
-      <p className="mt-1 text-sm opacity-70">
-        Every tokenized asset visible to the current identity.
-      </p>
+      <p className="mt-1 text-sm opacity-70">Every tokenized asset visible to the current identity.</p>
 
       {isPending ? <p className="mt-6 text-sm">Loading assets…</p> : null}
       {error ? (
-        <p className="mt-6 text-sm text-danger">
-          {error instanceof Error ? error.message : "Failed to load assets"}
-        </p>
+        <p className="mt-6 text-sm text-danger">{error instanceof Error ? error.message : "Failed to load assets"}</p>
       ) : null}
 
       {data ? (

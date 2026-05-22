@@ -24,9 +24,7 @@ function HelloPage() {
         <h2 className="text-sm font-medium uppercase tracking-wide text-brand-700">whoami</h2>
         {isPending ? <p className="mt-2 text-sm">Loading…</p> : null}
         {error ? (
-          <p className="mt-2 text-sm text-danger">
-            {error instanceof Error ? error.message : "Request failed"}
-          </p>
+          <p className="mt-2 text-sm text-danger">{error instanceof Error ? error.message : "Request failed"}</p>
         ) : null}
         {data ? (
           <pre className="mt-2 overflow-auto rounded bg-white/60 p-3 font-mono text-xs">
@@ -36,8 +34,7 @@ function HelloPage() {
       </section>
 
       <footer className="mt-12 text-xs opacity-60">
-        Edit <code className="font-mono">src/routes/index.tsx</code> to get started. See the
-        SettleMint docs at{" "}
+        Edit <code className="font-mono">src/routes/index.tsx</code> to get started. See the SettleMint docs at{" "}
         <a className="underline" href="https://docs.settlemint.com">
           docs.settlemint.com
         </a>

@@ -8,79 +8,79 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as AssetsAssetIdRouteImport } from "./routes/assets.$assetId";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssetsAssetIdRouteImport } from './routes/assets.$assetId'
 
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AssetsAssetIdRoute = AssetsAssetIdRouteImport.update({
-  id: "/assets/$assetId",
-  path: "/assets/$assetId",
+  id: '/assets/$assetId',
+  path: '/assets/$assetId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/assets/$assetId": typeof AssetsAssetIdRoute;
+  '/': typeof IndexRoute
+  '/assets/$assetId': typeof AssetsAssetIdRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/assets/$assetId": typeof AssetsAssetIdRoute;
+  '/': typeof IndexRoute
+  '/assets/$assetId': typeof AssetsAssetIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/assets/$assetId": typeof AssetsAssetIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/assets/$assetId': typeof AssetsAssetIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/assets/$assetId";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/assets/$assetId";
-  id: "__root__" | "/" | "/assets/$assetId";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/assets/$assetId'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/assets/$assetId'
+  id: '__root__' | '/' | '/assets/$assetId'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AssetsAssetIdRoute: typeof AssetsAssetIdRoute;
+  IndexRoute: typeof IndexRoute
+  AssetsAssetIdRoute: typeof AssetsAssetIdRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/assets/$assetId": {
-      id: "/assets/$assetId";
-      path: "/assets/$assetId";
-      fullPath: "/assets/$assetId";
-      preLoaderRoute: typeof AssetsAssetIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assets/$assetId': {
+      id: '/assets/$assetId'
+      path: '/assets/$assetId'
+      fullPath: '/assets/$assetId'
+      preLoaderRoute: typeof AssetsAssetIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssetsAssetIdRoute: AssetsAssetIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

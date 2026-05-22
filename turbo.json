@@ -1,13 +1,14 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
-  "globalDependencies": ["**/.env.*local", "tsconfig.json"],
+  "globalDependencies": ["**/.env.*local", "tsconfig.json", "bun.lock", ".oxlintrc.json", ".oxfmtrc.json"],
   "globalEnv": ["NODE_ENV", "CI", "VERCEL", "VERCEL_ENV"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".output/**", ".vinxi/**", ".vercel/**"],
-      "env": ["VITE_*", "DALP_API_URL", "DALP_API_KEY"]
+      "env": ["VITE_*", "DALP_API_URL", "DALP_API_KEY"],
+      "outputLogs": "new-only"
     },
     "dev": {
       "cache": false,
@@ -16,15 +17,18 @@
     },
     "lint": {
       "dependsOn": ["^lint"],
-      "outputs": []
+      "outputs": [],
+      "outputLogs": "new-only"
     },
     "typecheck": {
-      "dependsOn": ["^build"],
-      "outputs": ["**/*.tsbuildinfo"]
+      "dependsOn": ["^typecheck"],
+      "outputs": ["**/*.tsbuildinfo"],
+      "outputLogs": "new-only"
     },
     "test": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "outputLogs": "new-only"
     },
     "clean": {
       "cache": false

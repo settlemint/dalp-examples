@@ -1,9 +1,8 @@
 {
   "extends": "@dalp-examples/tsconfig/react.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["./src/*"]
     },
     "types": ["vite/client", "@tanstack/react-start"]
   },

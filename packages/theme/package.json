@@ -17,13 +17,13 @@
   },
   "scripts": {
     "lint": "oxlint -c ../../.oxlintrc.json --deny-warnings src",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsgo --noEmit",
     "clean": "rm -rf .turbo .tsbuildinfo"
   },
   "devDependencies": {
     "@dalp-examples/tsconfig": "workspace:*",
     "tailwindcss": "4.3.0",
-    "typescript": "5.9.2"
+    "typescript": "6.0.3"
   },
   "peerDependencies": {
     "tailwindcss": "^4.0.0"

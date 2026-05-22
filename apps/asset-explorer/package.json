@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "route:gen": "tsr generate",
     "lint": "oxlint -c ../../.oxlintrc.json --deny-warnings src",
-    "typecheck": "tsr generate && tsc --noEmit",
+    "typecheck": "tsr generate && tsgo --noEmit",
     "test": "bun test --timeout 30000 src",
     "clean": "rm -rf .turbo dist .output .vinxi .tsbuildinfo node_modules/.vite src/routeTree.gen.ts"
   },
@@ -37,7 +37,7 @@
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "tailwindcss": "4.3.0",
-    "typescript": "5.9.2",
+    "typescript": "6.0.3",
     "vite": "6.0.11"
   }
 }
