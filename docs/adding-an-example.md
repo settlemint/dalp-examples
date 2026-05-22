@@ -6,10 +6,10 @@ versioning); each example provides the _idea_.
 
 ## Step by step
 
-1. **Copy `apps/hello`** to `apps/<your-example-name>`.
+1. **Copy `apps/hello-dalp`** to `apps/<your-example-name>`.
 
    ```bash
-   cp -r apps/hello apps/<your-example-name>
+   cp -r apps/hello-dalp apps/<your-example-name>
    ```
 
 2. **Rename in `package.json`**:
@@ -28,7 +28,7 @@ versioning); each example provides the _idea_.
 5. **Replace the `README.md`** with a description of what the example shows and a Deploy button:
 
    ```markdown
-   [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2F<your-example-name>&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&project-name=dalp-<your-example-name>&repository-name=dalp-<your-example-name>)
+   [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2F<your-example-name>&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&project-name=<your-example-name>&repository-name=<your-example-name>)
    ```
 
 6. **Build the example** in `src/routes/*`. Use:

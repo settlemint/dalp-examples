@@ -1,9 +1,9 @@
-# DALP Hello
+# Hello DALP
 
 The smallest working DALP example. One page, one query: connect to a DALP
 instance and render the current identity.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2Fhello&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&envDescription=DALP%20dapi%20URL%20and%20optional%20API%20key&project-name=dalp-hello&repository-name=dalp-hello)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2Fhello-dalp&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&envDescription=DALP%20dapi%20URL%20and%20optional%20API%20key&project-name=hello-dalp&repository-name=hello-dalp)
 
 ## Stack
 
@@ -15,11 +15,11 @@ instance and render the current identity.
 ## Run locally
 
 ```bash
-cp apps/hello/.env.example apps/hello/.env.local
+cp apps/hello-dalp/.env.example apps/hello-dalp/.env.local
 # edit VITE_DALP_API_URL to point at a running DALP dapi
 
 bun install
-bun run --filter @dalp-examples/hello dev
+bun run --filter @dalp-examples/hello-dalp dev
 ```
 
 ## What to look at

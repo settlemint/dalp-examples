@@ -1,8 +1,8 @@
 {
-  "name": "@dalp-examples/hello",
+  "name": "@dalp-examples/hello-dalp",
   "version": "0.1.0",
   "private": true,
-  "description": "DALP Hello — the smallest working TanStack Start app that talks to DALP.",
+  "description": "Hello DALP — the smallest working TanStack Start app that talks to DALP.",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {

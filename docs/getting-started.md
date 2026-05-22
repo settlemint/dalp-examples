@@ -17,7 +17,7 @@ bun install
 Each example has its own `.env.example`. Copy and edit:
 
 ```bash
-cp apps/hello/.env.example apps/hello/.env.local
+cp apps/hello-dalp/.env.example apps/hello-dalp/.env.local
 ```
 
 The two variables every example needs:
@@ -32,15 +32,14 @@ The two variables every example needs:
 bun run dev
 
 # one example
-bun run --filter @dalp-examples/hello dev
-bun run --filter @dalp-examples/asset-explorer dev
+bun run --filter @dalp-examples/hello-dalp dev
 ```
 
 ## Build
 
 ```bash
 bun run build                                       # everything
-bun run --filter @dalp-examples/hello build         # one app
+bun run --filter @dalp-examples/hello-dalp build    # one app
 ```
 
 Output lands in `apps/<name>/dist` (`dist/client/` for the browser bundle, `dist/server/` for the SSR server) — that is what Vercel deploys.

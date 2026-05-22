@@ -15,7 +15,7 @@ function HelloPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16 font-sans">
-      <h1 className="text-3xl font-semibold text-brand-700">DALP Hello</h1>
+      <h1 className="text-3xl font-semibold text-brand-700">Hello DALP</h1>
       <p className="mt-2 text-sm opacity-80">
         The smallest example that connects to a DALP instance and reads the current identity.
       </p>

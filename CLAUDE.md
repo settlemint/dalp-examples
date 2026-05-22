@@ -26,7 +26,7 @@ Lifecycle Platform (DALP). It mirrors the toolchain of the main `dalp` repo
 
 ## Adding a new example
 
-1. Copy `apps/hello` to `apps/<name>` and rename in `package.json`.
+1. Copy `apps/hello-dalp` to `apps/<name>` and rename in `package.json`.
 2. Add `vercel.json` and `.env.example`.
 3. Add a Deploy button to the example's `README.md`.
 4. Add a row to the root `README.md` table.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "cd ../.. && bun install --frozen-lockfile && bun run --filter @dalp-examples/hello build",
+  "buildCommand": "cd ../.. && bun install --frozen-lockfile && bun run --filter @dalp-examples/hello-dalp build",
   "outputDirectory": "dist",
   "installCommand": "echo 'install handled by buildCommand'",
   "env": {

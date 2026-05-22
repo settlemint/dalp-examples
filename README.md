@@ -7,16 +7,14 @@
 </p>
 
 A minimal, opinionated scaffold for showing how a frontend application talks
-to DALP. It ships with the smallest possible starting point and one focused
-reference example. Everything else — additional examples, auth flows, custom
-UI — is meant to be built on top of this base by the team.
+to DALP. It ships with the smallest possible starting point so the team can
+build additional examples on top.
 
 ## Examples
 
-| Example                                        | Description                                                                | Deploy                                                                                                                                                                                                                                                                                      |
-| ---------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`apps/hello`](./apps/hello)                   | The smallest working DALP app. One route, one query (`whoami`).            | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2Fhello&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&project-name=dalp-hello&repository-name=dalp-hello)                            |
-| [`apps/asset-explorer`](./apps/asset-explorer) | Reference example. Browse assets, see transfer history, submit a transfer. | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2Fasset-explorer&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&project-name=dalp-asset-explorer&repository-name=dalp-asset-explorer) |
+| Example                                | Description                                                     | Deploy                                                                                                                                                                                                                                                                |
+| -------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`apps/hello-dalp`](./apps/hello-dalp) | The smallest working DALP app. One route, one query (`whoami`). | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsettlemint%2Fdalp-examples&root-directory=apps%2Fhello-dalp&env=VITE_DALP_API_URL,VITE_DALP_API_KEY&project-name=hello-dalp&repository-name=hello-dalp) |
 
 ## Stack
 
@@ -37,12 +35,11 @@ itself uses, minus the backend bits:
 ```bash
 bun install
 
-# pick an example
-cp apps/hello/.env.example apps/hello/.env.local
+cp apps/hello-dalp/.env.example apps/hello-dalp/.env.local
 # edit VITE_DALP_API_URL to point at a running DALP dapi
 
-bun run dev                                  # all apps at once (turbo)
-bun run --filter @dalp-examples/hello dev    # just hello
+bun run dev                                         # all apps at once (turbo)
+bun run --filter @dalp-examples/hello-dalp dev      # just hello-dalp
 ```
 
 See [`docs/getting-started.md`](./docs/getting-started.md) for the full guide.
@@ -52,8 +49,7 @@ See [`docs/getting-started.md`](./docs/getting-started.md) for the full guide.
 ```
 dalp-examples/
 ├─ apps/
-│  ├─ hello/                  # minimal example
-│  └─ asset-explorer/         # reference example
+│  └─ hello-dalp/             # minimal example
 ├─ packages/
 │  ├─ dalp-client/            # typed DALP API wrapper + React provider
 │  ├─ theme/                  # Tailwind preset + tokens
@@ -66,8 +62,8 @@ dalp-examples/
 ## Adding an example
 
 See [`docs/adding-an-example.md`](./docs/adding-an-example.md). The short
-version: copy `apps/hello`, rename, run `bun install`, and add a row to the
-table above with a Deploy button.
+version: copy `apps/hello-dalp`, rename, run `bun install`, and add a row to
+the table above with a Deploy button.
 
 ## Contributing
 

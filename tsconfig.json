@@ -1,9 +1,4 @@
 {
   "files": [],
-  "references": [
-    { "path": "./apps/hello" },
-    { "path": "./apps/asset-explorer" },
-    { "path": "./packages/dalp-client" },
-    { "path": "./packages/theme" }
-  ]
+  "references": [{ "path": "./apps/hello-dalp" }, { "path": "./packages/dalp-client" }, { "path": "./packages/theme" }]
 }
