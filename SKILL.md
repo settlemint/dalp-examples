@@ -86,6 +86,22 @@ await platform.auth.signUp.email({
 const me = await platform.dapi.user.me({});
 ```
 
+> **Additional sign-up fields.** Better Auth's `inferAdditionalFields` plugin lets you store extra user-profile fields on sign-up (country, province, marketing opt-in, etc.). The generated `auth.signUp.email` types don't include them by default, so cast the input to `Record<string, unknown>` to satisfy TypeScript:
+>
+> ```ts
+> await platform.auth.signUp.email({
+>   email,
+>   password,
+>   name,
+>   country,
+>   province, // additional fields stored on the user profile
+> } as Record<string, unknown>);
+> ```
+>
+> Reads come back via `client.user.me({})`.
+
+> **Anonymous bootstrap.** For sign-up and the initial sign-in attempt the caller has no credential yet. Pass _neither_ `apiKey` _nor_ `sessionToken`/`cookie`/`cookieStore` — the platform client allocates a fresh `cookieStore` that captures the session cookies Better Auth returns on success. Read `platform.cookieStore.header` after the call to forward those cookies to the browser response. The "exactly one credential" guardrail only triggers when you pass more than one; passing none is the legitimate anonymous case.
+
 For multi-user request handling on a server, create a **per-request** platform client and pass the inbound `cookie` header:
 
 ```ts

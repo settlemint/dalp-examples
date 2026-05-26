@@ -35,6 +35,21 @@ export function dalpForRequest(cookieHeader: string): DalpPlatformClient {
   });
 }
 
+/**
+ * Anonymous platform client — no apiKey, no cookie. Used for the signup
+ * landing of the auth chain (`platform.auth.signUp.email`, `signIn.email`,
+ * OTP verify). The returned client owns its own DalpCookieStore which
+ * captures the session cookies set by Better Auth on success; read
+ * `client.cookieStore.header` after the call to forward Set-Cookie to
+ * the browser.
+ */
+export function dalpAnonymous(): DalpPlatformClient {
+  return createDalpPlatformClient({
+    url: requireEnv("DALP_API_URL"),
+    organizationId: requireEnv("DALP_ORG_ID"),
+  });
+}
+
 export interface NormalizedDalpError {
   message: string;
   why?: string;

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { dalpAdmin, normalizeDalpError } from "~/lib/dalp";
 
@@ -42,12 +42,20 @@ function LandingPage() {
 
       <ConnectionStatus status={status} />
 
-      <a
-        className="text-sm text-neutral-500 underline hover:text-neutral-900"
-        href="http://localhost:4321"
-      >
-        Issuer portal →
-      </a>
+      <div className="flex items-center gap-3">
+        <Link
+          to="/signup"
+          className="inline-flex items-center justify-center rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+        >
+          Create your account
+        </Link>
+        <a
+          className="text-sm text-neutral-500 underline hover:text-neutral-900"
+          href="http://localhost:4321"
+        >
+          Issuer portal →
+        </a>
+      </div>
     </main>
   );
 }
