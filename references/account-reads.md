@@ -2,8 +2,6 @@
 
 The day-to-day read endpoints an investor app leans on: search the platform, read a transaction by hash, look up an account, and manage a personal contacts book. Mutations on user identity and balance live in [`user-kyc.md`](user-kyc.md) and [`token.md`](token.md); this file is the read-heavy investor side.
 
-> All recipes are mined from `kit/dapi/tests/e2e/tests/sdk/monitoring-search-transaction.test.ts` and `contacts.test.ts`. Each footer cites the file + line.
-
 ---
 
 ## account (`client.account.*`)
@@ -91,7 +89,7 @@ console.log(settled.events);          // decoded event chain
 
 ### When you'd build a screen for this
 
-- **Investor "deploy in progress" / "transfer in progress" status UI** uses `transaction.read` to drive a poll loop after any async mutation (TKT-7, TKT-8 mutation flows, TKT-9 transfer flow).
+- **Investor "deploy in progress" / "transfer in progress" status UI** uses `transaction.read` to drive a poll loop after any async mutation after any async mutation.
 - **Issuer Bond Dashboard → Transactions tab** is `client.user.events` filtered to this token, not `transaction.read`. `transaction.read` is the drill-in detail after a click.
 
 ---
@@ -128,7 +126,7 @@ The search is **permission-aware** — the caller only sees buckets they have re
 
 ### When you'd build a screen for this
 
-- **Issuer top-bar global search** uses `search.global` to surface mixed results (TKT-8 nav header).
+- **Issuer top-bar global search** uses `search.global` to surface mixed results in a single dropdown.
 - **Investor "find a token" omnibox** (optional in v1) would use `search.global` filtered to the `tokens` bucket.
 
 ---
@@ -209,6 +207,6 @@ Use `contacts.search` for the transfer-form autocomplete (live keystroke search)
 
 ### When you'd build a screen for this
 
-- **Investor transfer form (TKT-9)** uses `contacts.search` to autocomplete the "to" field.
+- **Investor transfer form** uses `contacts.search` to autocomplete the "to" field.
 - **Issuer XvP / settlement counterparty picker** (out of scope for v1 apps) would use `contacts.list` + `contacts.search`.
 - **Settings → Contacts management page** (out of scope for v1) would use the full CRUD.

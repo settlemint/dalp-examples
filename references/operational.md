@@ -2,8 +2,6 @@
 
 The operational sidecar — surfaces the issuer and platform admin lean on when they need to act on something other than a token's primary lifecycle. Actions queue, addon contracts (yield schedules, XvP), external token import, identity recovery, and webhook configuration.
 
-> Recipes mined from `kit/dapi/tests/e2e/tests/sdk/actions.test.ts`, `xvp.test.ts`, `fixed-yield.test.ts`, `exchange-rates.test.ts`, `external-tokens.test.ts`, `identity-recovery.test.ts`, and the `webhooks/` test folder. Each footer cites the file + line.
-
 ---
 
 ## actions (`client.actions.*`)
@@ -49,7 +47,7 @@ Action types include `MatureBond`, `RedeemBond`, `ClaimYield`, `ApproveMaturityA
 
 ### When you'd build a screen for this
 
-- **Out of scope for v1 reference apps** — the requirements doc drops XvP / maturity / yield from the v1 build. If you add the Actions tab later, `actions.list` is the one endpoint that surfaces everything in one place.
+- **Out of scope for v1 reference apps** — the v1 reference apps don't surface XvP / maturity / yield yet. If you add the Actions tab later, `actions.list` is the one endpoint that surfaces everything in one place.
 
 ---
 
@@ -64,7 +62,7 @@ Feature contracts deployed alongside a token. Two sub-namespaces in v1:
 
 ### addons.fixedYieldSchedule (`client.addons.fixedYieldSchedule.*`)
 
-Verify the exact method list in `kit/sdk/src/contract.ts`. Common methods:
+Verify the exact method list against your SDK type definitions. Common methods:
 
 | Method                                        | Purpose                                         |
 | --------------------------------------------- | ----------------------------------------------- |
@@ -73,8 +71,6 @@ Verify the exact method list in `kit/sdk/src/contract.ts`. Common methods:
 | `client.addons.fixedYieldSchedule.create`     | Deploy a new yield schedule attached to a token |
 | `client.addons.fixedYieldSchedule.topUp`      | Send denomination asset into the yield treasury |
 | `client.addons.fixedYieldSchedule.claimYield` | Claim accrued yield as a holder                 |
-
-Source: `kit/dapi/tests/e2e/tests/sdk/fixed-yield.test.ts`
 
 ### addons.xvp (`client.addons.xvp.*`)
 
@@ -89,11 +85,9 @@ XvP (cross-token / X-versus-Payment) — atomic two-leg settlement. Common metho
 | `client.addons.xvp.execute` | Execute (atomic) once both sides have approved                 |
 | `client.addons.xvp.cancel`  | Cancel a settlement before execute                             |
 
-Source: `kit/dapi/tests/e2e/tests/sdk/xvp.test.ts`
-
 ### When you'd build a screen for this
 
-- **Out of scope for v1 reference apps** per the requirements doc (Phase 2). The Actions tab links into these mutations when the corresponding action types appear.
+- **Out of scope for v1 reference apps** in this repo (Phase 2 in our roadmap). The Actions tab links into these mutations when the corresponding action types appear.
 
 ---
 
@@ -181,7 +175,7 @@ await client.externalToken.register({
 
 ### When you'd build a screen for this
 
-- **Issuer Reserve Token wizard → Bond denomination asset selector (TKT-6)** uses `externalToken.list` (filtered) to populate the dropdown of accepted USD-stable assets.
+- **Issuer Reserve Token wizard → Bond denomination asset selector** uses `externalToken.list` (filtered) to populate the dropdown of accepted USD-stable assets.
 - **Platform admin "registered external tokens" table** (out of scope for v1) uses the full surface.
 
 ---
@@ -257,7 +251,7 @@ console.log(status.data.steps); // per-step status with timestamps
 
 CRUD over webhook endpoint registrations. The cross-cutting [Webhook verification](../SKILL.md#cross-cutting-webhook-verification) section in SKILL.md covers the receiver side (signature verification, failure codes). This namespace is the _sender configuration_ side — register a URL, pick which event types to subscribe to, rotate the signing secret.
 
-### Methods (verify in `kit/sdk/src/contract.ts` — these may be v2 only)
+### Methods (verify against your SDK type definitions — some are v2-only)
 
 | Method                         | Purpose                                                                                |
 | ------------------------------ | -------------------------------------------------------------------------------------- |
@@ -301,7 +295,7 @@ const rotated = await client.webhooks.rotateSecret({
 
 ### Recipe: Look up sent events for an endpoint
 
-Source-of-truth for "did event X get delivered?" lives in `kit/dapi/tests/e2e/tests/sdk/webhooks/delivery.spec.ts`. Verify the exact method shape — typically `client.webhooks.deliveries.list({ params: { webhookId }, query: { page } })` or similar.
+Verify the exact method shape — typically `client.webhooks.deliveries.list({ params: { webhookId }, query: { page } })` or similar.
 
 ### When you'd build a screen for this
 
@@ -314,7 +308,7 @@ Source-of-truth for "did event X get delivered?" lives in `kit/dapi/tests/e2e/te
 
 | Reference app screen                                      | Methods used                                                                      |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Issuer Reserve Token → Bond denomination selector (TKT-6) | `externalToken.list`                                                              |
+| Issuer Reserve Token → Bond denomination selector         | `externalToken.list`                                                              |
 | Issuer Bond Dashboard → Actions tab (out of scope for v1) | `actions.list`                                                                    |
 | Issuer admin → Recover wallet (out of scope for v1)       | `identityRecovery.preview`, `identityRecovery.execute`, `identityRecovery.status` |
 | Investor Asset detail → FX display (optional in v1)       | `exchangeRates.read`                                                              |

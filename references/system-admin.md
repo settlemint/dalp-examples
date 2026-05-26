@@ -53,7 +53,7 @@ await pollTransaction(created.data.transactionId);
 ### When you'd build a screen for this
 
 - **Every app loader** calls `system.read({ systemAddress: "default" })` once on boot to seed the registry-address context (used implicitly by token + identity flows). The reference apps don't render this — it's pure plumbing.
-- **Platform admin "deploy system" wizard** would use `system.create` + `system.resume` (out of scope for v1 reference apps).
+- **Platform admin "deploy system" wizard** would use `system.create` + `system.resume` (out of scope for the v1 reference apps in this repo).
 
 ---
 
@@ -63,7 +63,7 @@ await pollTransaction(created.data.transactionId);
 
 Claim topics are the ERC-3643 / OnchainID enumeration of _what kinds of claims_ can be attached to an identity (e.g., `KYC_APPROVED`, `ACCREDITED_INVESTOR`, `PEP_CHECK`). The platform admin defines the list; trusted issuers issue claims of those types; compliance modules read them.
 
-### Methods (verify in `kit/sdk/src/contract.ts`)
+### Methods (verify against your SDK type definitions)
 
 | Method                             | Purpose                                     |
 | ---------------------------------- | ------------------------------------------- |
@@ -83,7 +83,7 @@ for (const topic of topics.data) {
 
 ### When you'd build a screen for this
 
-- **Issuer Reserve Token → Compliance Modules step (TKT-6)** reads `claimTopics.list` so the user can pick which topics are required for the token's identity allow/block list.
+- **Issuer Reserve Token → Compliance Modules step** reads `claimTopics.list` so the user can pick which topics are required for the token's identity allow/block list.
 - **Compliance admin / "what does this claim mean" surface** would use `claimTopics.read`.
 
 ---
@@ -94,7 +94,7 @@ for (const topic of topics.data) {
 
 The registry of _who is allowed to issue what claim topics_. A trusted issuer is an organization (KYC vendor, AML provider, internal compliance team) whose claims are accepted by the compliance engine. Each issuer is scoped to one or more claim topics they can mint.
 
-### Methods (verify in `kit/sdk/src/contract.ts`)
+### Methods (verify against your SDK type definitions)
 
 | Method                                | Purpose                                            |
 | ------------------------------------- | -------------------------------------------------- |
@@ -130,7 +130,7 @@ Most apps don't talk to factories directly — `client.token.create` handles fac
 
 ### When you'd build a screen for this
 
-- **Platform admin → registered factories table** (out of scope for v1 reference apps).
+- **Platform admin → registered factories table** (out of scope for the v1 reference apps in this repo).
 
 ---
 
@@ -142,13 +142,13 @@ Price-feed configuration — DALP token pricing pulls from on-chain feeds (Chain
 
 ### When you'd build a screen for this
 
-- **Platform admin → price feeds** (out of scope for v1 reference apps).
+- **Platform admin → price feeds** (out of scope for the v1 reference apps in this repo).
 
 ---
 
 ## system.activity (`client.system.activity.*`), system.stats, system.entity, system.directory
 
-These are platform-level read surfaces — system-wide activity log, aggregate stats, entity directory, participant directory. None are on the critical path for the v1 reference apps. Their schemas live alongside `system/` in `packages/dalp/api-contract/src/routes/system/`; check `contract.ts` for the exact method list when you need them.
+These are platform-level read surfaces — system-wide activity log, aggregate stats, entity directory, participant directory. None are on the critical path for the v1 reference apps. Check your SDK type definitions for the exact method list when you need them.
 
 ---
 
@@ -177,7 +177,7 @@ for (const org of orgs.data) {
 
 ### When you'd build a screen for this
 
-- **Platform admin "all organizations" table** (out of scope for v1 reference apps).
+- **Platform admin "all organizations" table** (out of scope for the v1 reference apps in this repo).
 
 ---
 
@@ -244,21 +244,21 @@ for (const template of templates.data) {
 
 ### Asset type templates
 
-> The brainstorm doc references `client.settings.assetTypeTemplates.list` for the issuer wizard's asset-type picker. Verify the exact path in `contract.ts` — it may live under `client.settings.assetTypeTemplates.*` or as a flat `client.settings.read({ key: "asset-type-templates" })` depending on the current API version.
+> The asset-type templates surface lives at `client.settings.assetTypeTemplates.*` in current versions; in older SDK builds it may be exposed via the flat `client.settings.read({ key: "asset-type-templates" })`. Verify against your SDK type definitions.
 
 ### When you'd build a screen for this
 
-- **Issuer Reserve Token → Asset Type step (TKT-6)** uses `settings.assetTypeTemplates.list` (or equivalent) to render the selectable card grid.
-- **Issuer Reserve Token → Compliance Modules step (TKT-6)** uses `settings.complianceTemplates.list` for the "use a template" shortcut.
+- **Issuer Reserve Token → Asset Type step** uses `settings.assetTypeTemplates.list` (or equivalent) to render the selectable card grid.
+- **Issuer Reserve Token → Compliance Modules step** uses `settings.complianceTemplates.list` for the "use a template" shortcut.
 - **Theming UI (out of scope for v1)** would use `settings.globalTheme.*` and `settings.theme.*`.
 
 ---
 
 ## Reference apps cross-link summary
 
-| Reference app screen                              | Methods used                                                   |
-| ------------------------------------------------- | -------------------------------------------------------------- |
-| App boot — registry context                       | `system.read({ systemAddress: "default" })`                    |
-| Issuer Reserve Token → Asset Type (TKT-6)         | `settings.assetTypeTemplates.list`                             |
-| Issuer Reserve Token → Compliance Modules (TKT-6) | `system.claimTopics.list`, `settings.complianceTemplates.list` |
-| Public landing (pre-signin)                       | `settings.publicConfig.get`                                    |
+| Reference app screen                      | Methods used                                                   |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| App boot — registry context               | `system.read({ systemAddress: "default" })`                    |
+| Issuer Reserve Token → Asset Type         | `settings.assetTypeTemplates.list`                             |
+| Issuer Reserve Token → Compliance Modules | `system.claimTopics.list`, `settings.complianceTemplates.list` |
+| Public landing (pre-signin)               | `settings.publicConfig.get`                                    |

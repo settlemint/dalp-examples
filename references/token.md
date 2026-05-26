@@ -2,7 +2,7 @@
 
 The single largest namespace in the SDK. Covers token deployment, lifecycle mutations, role management, document handling, and every read surface a token-aware UI needs (holders, events, stats, allowance, compliance, metadata).
 
-All recipes here are mined from `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts`, `token-compliance.test.ts`, and `bond-lifecycle.test.ts` in the canonical DAPI repo. Each recipe footer cites the exact file + line.
+All recipes here are mined from the SDK's canonical test fixtures.
 
 > Most mutations take a `walletVerification` field — the response payload from a wallet-auth challenge (pincode, two-factor, passkey, or secret codes). Without a valid verification, the request is rejected. See the cross-cutting [Auth flow](../SKILL.md#cross-cutting-auth-flow) section for how to mint one.
 
@@ -70,8 +70,6 @@ const token = await client.token.create({
 const tokenAddress = token.data.id; // contract address
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:19-34`
-
 ### Recipe: Read a token
 
 ```ts
@@ -81,8 +79,6 @@ const token = await client.token.read({
 console.log(token.data.symbol); // "SCUSD"
 console.log(token.data.pausable.paused); // false
 ```
-
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:43-48`
 
 ### Recipe: Grant roles to an admin wallet
 
@@ -96,8 +92,6 @@ await client.token.grantRole({
   },
 });
 ```
-
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:143-150`
 
 Available role names: `admin`, `emergency`, `supplyManagement`, `complianceManagement`, `auditor`, `governance`. The full list is enforced by the contract; passing an unknown role 422s.
 
@@ -115,8 +109,6 @@ await client.token.pause({
 });
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:153-165`
-
 Pausing blocks all transfers globally for that token until `unpause` runs. Pause/unpause are synchronous — the response carries the new `pausable.paused` state.
 
 ### Recipe: Mint to multiple recipients
@@ -133,7 +125,6 @@ await client.token.mint({
 ```
 
 The `recipients` and `amounts` arrays must be the same length. Single-recipient is also valid (`recipients: holderA, amounts: "1000"`). 422 if `amount = "0"` or arrays mismatch.
-Source: validation pattern at `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:465-474`
 
 ### Recipe: Transfer batch
 
@@ -151,7 +142,6 @@ await client.token.transfer({
 ```
 
 422 if `transfers` is `[]`.
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:476-483`
 
 ### Recipe: Approve a spender / revoke
 
@@ -169,8 +159,6 @@ await client.token.approve({
 });
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:223-245`
-
 ### Recipe: Freeze a partial amount on a wallet
 
 ```ts
@@ -185,7 +173,6 @@ await client.token.freezePartial({
 ```
 
 422 if `amount = "0"`.
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:494-502`
 
 ### Recipe: Recover lost wallet (transfer all balances)
 
@@ -199,8 +186,6 @@ await client.token.forcedRecover({
   },
 });
 ```
-
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:513-521`
 
 `forcedRecover` reassigns the OnchainID to `newWallet` and moves all balances. Distinct from `recoverTokens` (operates on the calling wallet) and `recoverERC20` (recovers a foreign ERC20 mistakenly sent to the token contract).
 
@@ -219,8 +204,6 @@ await client.token.setCap({
 });
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:269-278` (price), `535-542` (cap — `newCap: "0"` is rejected)
-
 ### Common errors (core)
 
 | Code                             | Status | When                                                                                    | What to do                                                         |
@@ -234,11 +217,11 @@ Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:269-278` (price), `535-542`
 
 ### When you'd build a screen for this
 
-- **Issuer Token Setup → Create & Deploy** uses `token.create` (TKT-7).
-- **Issuer Bond Dashboard header** uses `token.read` + `token.metadata` + `token.features` (TKT-8).
-- **Mint / Distribute / Freeze actions** in the dashboard's right panel use `token.mint` / `token.transfer` / `token.freezeAddress` / `token.freezePartial` (TKT-8).
-- **Investor Browse** uses `token.list({ query: { page } })` (TKT-9).
-- **Investor Transfer flow** uses `token.transfer` and must surface compliance 409s cleanly (TKT-9).
+- **Issuer Token Setup → Create & Deploy** uses `token.create`.
+- **Issuer Bond Dashboard header** uses `token.read` + `token.metadata` + `token.features`.
+- **Mint / Distribute / Freeze actions** in the dashboard's right panel use `token.mint` / `token.transfer` / `token.freezeAddress` / `token.freezePartial`.
+- **Investor Browse** uses `token.list({ query: { page } })`.
+- **Investor Transfer flow** uses `token.transfer` and must surface compliance 409s cleanly.
 
 ---
 
@@ -271,8 +254,6 @@ for (const config of compliance.data.complianceModuleConfigs) {
 }
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:92-95`
-
 ### Module catalog (the modules DALP ships)
 
 | Module                              | What it enforces                               |
@@ -289,8 +270,8 @@ A token's compliance is the union of all attached modules. A transfer that fails
 
 ### When you'd build a screen for this
 
-- **Issuer Reserve Token wizard → Compliance Modules step** (TKT-6) — multi-select cards write the chosen modules into the token-create body's `compliance` field.
-- **Bond Dashboard → Compliance tab** reads `token.compliance` to show which modules are enabled (TKT-8).
+- **Issuer Reserve Token wizard → Compliance Modules step** — multi-select cards write the chosen modules into the token-create body's `compliance` field.
+- **Bond Dashboard → Compliance tab** reads `token.compliance` to show which modules are enabled.
 
 ---
 
@@ -327,13 +308,11 @@ if (holder.data.holder) {
 }
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:56-68`
-
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Bondholders tab** uses `token.holders` (TKT-8).
-- **Bond Dashboard → Top Investors pie chart** uses `token.holders({ query: { page: { limit: 5 } } })` (TKT-8).
-- **Investor Asset detail → My balance** uses `token.holder({ query: { holderAddress: me } })` (TKT-9).
+- **Bond Dashboard → Bondholders tab** uses `token.holders`.
+- **Bond Dashboard → Top Investors pie chart** uses `token.holders({ query: { page: { limit: 5 } } })`.
+- **Investor Asset detail → My balance** uses `token.holder({ query: { holderAddress: me } })`.
 
 ---
 
@@ -395,8 +374,6 @@ console.log(confirmed.data.versionNumber); // 1
 console.log(confirmed.data.isLatest); // true
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:299-334`
-
 ### Recipe: Replace a document (versioning)
 
 ```ts
@@ -421,8 +398,6 @@ console.log(replacement.data.versionNumber); // 2
 console.log(replacement.data.isLatest); // true
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:344-373`
-
 ### Recipe: Get download URL / delete
 
 ```ts
@@ -436,19 +411,17 @@ await client.token.documents.delete({
 });
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:405-416`
-
 Calling `getDownloadUrl` on a non-latest version of a versioned document throws — only the latest is downloadable.
 
 ### Common errors (documents)
 
-- **422** — `fileSize: 0` or unsupported `mimeType` (the API rejects executable extensions even when the mime says PDF — see `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:426-438`).
+- **422** — `fileSize: 0` or unsupported `mimeType` (the API rejects executable extensions even when the mime says PDF).
 - **403** — `visibility: "restricted"` document with a caller lacking the right role.
 
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Documents tab** uses `documents.list` + `documents.getDownloadUrl` (TKT-8).
-- Document upload UI is **out of scope for the v1 example apps** per the requirements doc — the SDK supports it, the reference apps don't include it yet. If you need it, this recipe is the canonical wire-up.
+- **Bond Dashboard → Documents tab** uses `documents.list` + `documents.getDownloadUrl`.
+- Document upload UI is **out of scope for the v1 reference apps in this repo** — the SDK supports it, the v1 apps don't include it yet. If you need it, this recipe is the canonical wire-up.
 
 ---
 
@@ -477,12 +450,10 @@ for (const event of events.data) {
 }
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:70-74`
-
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Statistics chart** (Yield / Supply / Volume) renders time-series from `token.events({ query: { sortBy: "blockTimestamp", sortDirection: "desc" } })` (TKT-8).
-- **Bond Dashboard → Investors → Transfers** uses `token.events({ query: { filters: [{ id: "eventType", operator: "eq", value: "Transfer" }] } })` (TKT-8).
+- **Bond Dashboard → Statistics chart** (Yield / Supply / Volume) renders time-series from `token.events({ query: { sortBy: "blockTimestamp", sortDirection: "desc" } })`.
+- **Bond Dashboard → Investors → Transfers** uses `token.events({ query: { filters: [{ id: "eventType", operator: "eq", value: "Transfer" }] } })`.
 
 ---
 
@@ -506,8 +477,6 @@ const actions = await client.token.actions({
   query: { page: { limit: 10, offset: 0 } },
 });
 ```
-
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:76-80`
 
 For the cross-token action queue (XvP across multiple assets, maturity, yield) use the top-level `client.actions.*` namespace instead — see [`operational.md`](operational.md).
 
@@ -545,8 +514,6 @@ for (const point of totalSupply.data.totalSupplyHistory) {
 }
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:123-127`
-
 ### Recipe: Wallet distribution buckets
 
 ```ts
@@ -560,26 +527,24 @@ for (const bucket of distribution.data.buckets) {
 }
 ```
 
-Source: `kit/dapi/tests/e2e/tests/sdk/tokens.test.ts:129-133`
-
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Overview → Supply panel + Statistics chart** uses `statsTotalSupply`, `statsSupplyChanges`, `statsVolume` (TKT-8).
-- **Bond Dashboard → Right rail → Wallet distribution pie** uses `statsWalletDistribution` (TKT-8).
+- **Bond Dashboard → Overview → Supply panel + Statistics chart** uses `statsTotalSupply`, `statsSupplyChanges`, `statsVolume`.
+- **Bond Dashboard → Right rail → Wallet distribution pie** uses `statsWalletDistribution`.
 
 ---
 
 ## Reference apps cross-link summary
 
-| Reference app screen                           | Token methods used                                                                                           |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Issuer Reserve Token wizard (TKT-6)            | client-side state only — compliance module choices bundle into `token.create` body                           |
-| Issuer Token Setup → Create & Deploy (TKT-7)   | `token.create`                                                                                               |
-| Issuer Bond Dashboard header (TKT-8)           | `token.read`, `token.metadata`, `token.features`                                                             |
-| Issuer Bond Dashboard supply/stats (TKT-8)     | `token.statsTotalSupply`, `token.statsSupplyChanges`, `token.statsVolume`, `token.statsWalletDistribution`   |
-| Issuer Bond Dashboard Bondholders (TKT-8)      | `token.holders`                                                                                              |
-| Issuer Bond Dashboard Transfers/Events (TKT-8) | `token.events`                                                                                               |
-| Issuer mutation actions (TKT-8)                | `token.mint`, `token.transfer`, `token.freezeAddress`, `token.freezePartial`, `token.pause`, `token.unpause` |
-| Investor Browse (TKT-9)                        | `token.list`                                                                                                 |
-| Investor Asset detail (TKT-9)                  | `token.read`, `token.metadata`, `token.holder`                                                               |
-| Investor Transfer (TKT-9)                      | `token.transfer`                                                                                             |
+| Reference app screen                   | Token methods used                                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Issuer Reserve Token wizard            | client-side state only — compliance module choices bundle into `token.create` body                           |
+| Issuer Token Setup → Create & Deploy   | `token.create`                                                                                               |
+| Issuer Bond Dashboard header           | `token.read`, `token.metadata`, `token.features`                                                             |
+| Issuer Bond Dashboard supply/stats     | `token.statsTotalSupply`, `token.statsSupplyChanges`, `token.statsVolume`, `token.statsWalletDistribution`   |
+| Issuer Bond Dashboard Bondholders      | `token.holders`                                                                                              |
+| Issuer Bond Dashboard Transfers/Events | `token.events`                                                                                               |
+| Issuer mutation actions                | `token.mint`, `token.transfer`, `token.freezeAddress`, `token.freezePartial`, `token.pause`, `token.unpause` |
+| Investor Browse                        | `token.list`                                                                                                 |
+| Investor Asset detail                  | `token.read`, `token.metadata`, `token.holder`                                                               |
+| Investor Transfer                      | `token.transfer`                                                                                             |

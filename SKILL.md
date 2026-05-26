@@ -9,7 +9,9 @@ A fully typed TypeScript client for the **Digital Asset Lifecycle Platform** (DA
 
 This file is the LLM-consumable spec. Paste it into Claude, Cursor, or any agent and it has every namespace, every idempotency rule, every error shape, every recipe. Long-tail per-domain detail lives in `references/<domain>.md` — open them on demand.
 
-> **Source-of-truth note for the agent**: every code example here is mined from real tests in the canonical DAPI repo. The recipe footers cite the test path. If a method isn't in this file, it doesn't exist in the SDK — go to `docs.settlemint.com` (see [What's NOT in the SDK](#whats-not-in-the-sdk)).
+> **Verify against your SDK version**: the SDK evolves. When the docs name a specific method, field, or error code, the SDK type definitions are the source of truth. If a name doesn't match what your installed `/dalp-sdk` exports, trust the SDK and treat the docs as out of date.
+
+> **Source-of-truth note for the agent**: every code example here is mined from real tests in the SDK's canonical test fixtures. If a method isn't in this file, it doesn't exist in the SDK — go to `docs.settlemint.com` (see [What's NOT in the SDK](#whats-not-in-the-sdk)).
 
 ---
 
@@ -526,5 +528,5 @@ If the LLM hits a wall trying to do something with the SDK and one of these is t
 - **`client.<namespace>.<method>`** — the path on the DAPI client returned by `createDalpClient()`. The platform client exposes the same shape under `platform.dapi.<namespace>.<method>`.
 - **`[sync|async]`** in method lines — `async` means the operation enqueues a workflow and you must poll `statusUrl` or subscribe to a webhook.
 - **`[idempotency: required|optional|none]`** — `required` means the SDK throws if you call the method without `idempotencyKey`; `optional` means it's accepted; `none` means the method is a pure read.
-- **Recipe footer** — every code recipe cites the canonical test file (`kit/dapi/tests/e2e/sdk/<file>.test.ts:<line>`) so an LLM can verify the shape against ground truth.
+- **Recipe footer** — every code recipe is mined from the SDK's canonical test fixtures so an LLM can rely on the shape rather than guessing.
 - **"When you'd build a screen for this"** — cross-link to which `apps/issuer` or `apps/investor` screen exercises the API. If a method appears here without a cross-link, the reference apps don't use it yet.

@@ -4,8 +4,6 @@ The user + KYC chain is the **DALP moment** — the proof that ERC-3643 complian
 
 This file covers the full chain — user reads, the KYC workflow, document upload, and the `system.identity.*` hand-off that lands the claim on-chain.
 
-> All recipes are mined from `kit/dapi/tests/e2e/tests/sdk/users.test.ts`, `user-documents.test.ts`, `identity-register-self-access-authz.test.ts`, and `invitation-cross-org-kyc.test.ts`. Each footer cites the exact file + line.
-
 ---
 
 ## user (`client.user.*`) — core reads
@@ -89,8 +87,8 @@ Requires `identityManager` role. Async — poll `statusUrl` or subscribe to the 
 ### When you'd build a screen for this
 
 - **Both apps' authenticated shell** uses `user.me` to gate every route after sign-in.
-- **Investor Holdings dashboard (TKT-9)** uses `user.assets`.
-- **Investor Activity feed (TKT-9)** uses `user.events`.
+- **Investor Holdings dashboard** uses `user.assets`.
+- **Investor Activity feed** uses `user.events`.
 - **Issuer "Add user" admin action (out of scope for v1)** would use `user.create`.
 
 ---
@@ -123,8 +121,8 @@ console.log(profile.data.latestStatus);
 
 ### When you'd build a screen for this
 
-- **Investor header KYC badge (TKT-5)** uses this to show Pending / Approved / Rejected pill.
-- **Investor signup flow (TKT-5)** branches off `latestStatus` to decide whether to show the KYC form, the "waiting for approval" state, or the rejection reason.
+- **Investor header KYC badge** uses this to show Pending / Approved / Rejected pill.
+- **Investor signup flow** branches off `latestStatus` to decide whether to show the KYC form, the "waiting for approval" state, or the rejection reason.
 
 ---
 
@@ -182,8 +180,8 @@ for (const version of queue.data) {
 
 ### When you'd build a screen for this
 
-- **Investor KYC submission form (TKT-5)** uses `versions.create` → `version.update` → `version.submit`.
-- **Issuer KYC Review queue (TKT-8)** uses `versions.list({ filters: [{ id: "status", value: "submitted" }] })` per user surfaced in the user list.
+- **Investor KYC submission form** uses `versions.create` → `version.update` → `version.submit`.
+- **Issuer KYC Review queue** uses `versions.list({ filters: [{ id: "status", value: "submitted" }] })` per user surfaced in the user list.
 
 ---
 
@@ -296,8 +294,8 @@ console.log(requested.data.newDraftVersionId);
 
 ### When you'd build a screen for this
 
-- **Investor KYC submission form (TKT-5)** uses `version.update` (live form save) + `version.submit`.
-- **Issuer KYC Review detail (TKT-8)** uses `version.read` + Approve / Reject / Request Update CTAs.
+- **Investor KYC submission form** uses `version.update` (live form save) + `version.submit`.
+- **Issuer KYC Review detail** uses `version.read` + Approve / Reject / Request Update CTAs.
 - **The DALP demo handshake** is exactly `investor.submit → issuer.approve → investor.transfer succeeds`.
 
 ---
@@ -349,7 +347,7 @@ window.location.href = url.data.downloadUrl; // pre-signed S3 GET, server-side d
 
 ### When you'd build a screen for this
 
-- **Reference apps in v1: out of scope** — TKT-5's KYC form is fields-only, no document upload. The SDK supports it; the docs above are the canonical wire-up when you add the upload UI later.
+- **Reference apps in v1: out of scope** — the v1 KYC form is fields-only, no document upload. The SDK supports it; the docs above are the canonical wire-up when you add the upload UI later.
 
 ---
 
@@ -387,7 +385,7 @@ await client.user.kyc.actionRequest.fulfill({
 
 The on-chain identity claim layer. KYC approval triggers a workflow that ultimately calls into this namespace to register a claim on the holder's OnchainID. Most apps don't call these directly — they're surface area for issuer admins and compliance officers who need to read or correct identity state outside the normal KYC flow.
 
-### Common methods (verify exact set in `kit/sdk/src/contract.ts`)
+### Common methods (verify against your SDK type definitions)
 
 | Method                                    | Purpose                                                                                          |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -407,8 +405,6 @@ const registered = await client.system.identity.register({
 });
 console.log(registered.data.identityAddress);
 ```
-
-Source: `kit/dapi/tests/e2e/tests/sdk/identity-register-self-access-authz.test.ts`
 
 ### When you'd build a screen for this
 
@@ -488,4 +484,4 @@ await investorClient.token.transfer({
 //   country compliance modules read the claim from the OnchainID.
 ```
 
-This six-step handshake is the spine of TKT-5 + TKT-8 in the reference apps. It's the single most important thing the SDK enables — render it cleanly and the rest of DALP follows.
+This six-step handshake is the spine of the signup + dashboard flows in the reference apps. It's the single most important thing the SDK enables — render it cleanly and the rest of DALP follows.

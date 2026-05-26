@@ -4,7 +4,7 @@ The v2 API surface is a near-superset of v1's reads with canonical paginated sha
 
 > **Hard rule:** v2 owns _queries_; v1 still owns _mutations_ across the shared namespaces. If you're calling `v2/token/...` for anything but a list / read, you're at the wrong endpoint.
 
-> All recipes are mined from the v2 contract files at `packages/dalp/api-contract/src/routes/v2/<domain>/<domain>.v2.contract.ts` and `kit/dapi/tests/e2e/tests/sdk/monitoring-search-transaction.test.ts`. Each footer cites the file + line where possible.
+> All recipes are mined from the SDK's canonical type definitions and test fixtures.
 
 ---
 
@@ -17,7 +17,7 @@ API + blockchain telemetry. Two distinct sub-namespaces:
 - **`monitoring.api`** — request rates, error rates, latency percentiles, top endpoints by traffic. Sourced from the DAPI gateway.
 - **`monitoring.blockchain`** — block-level metrics (height, time, gas), per-chain health, recent reorgs, indexer lag.
 
-> **README discrepancy (confirmed against `packages/dalp/api-contract/src/routes/v2/v2.contract.ts`)**: the SDK README documents `monitoring` as a flat namespace; the v2 contract exposes it nested as `{ api, blockchain }`. The actual SDK shape is the nested one. File a separate doc-fix ticket against `kit/sdk/README.md`.
+> **Note**: the SDK README documents `monitoring` as a flat namespace; the v2 contract exposes it nested as `{ api, blockchain }`. The actual SDK shape is the nested one.
 
 ### Common methods (verify exact set in `contract.ts`)
 
@@ -50,7 +50,7 @@ Both endpoints support **cursor pagination** rather than offset — these are hi
 
 ### When you'd build a screen for this
 
-- **Platform admin "Platform Status" page** (out of scope for v1 reference apps) uses both sub-namespaces.
+- **Platform admin "Platform Status" page** (out of scope for the v1 reference apps in this repo) uses both sub-namespaces.
 
 ---
 
@@ -264,13 +264,13 @@ Cursor-paginated like the other time-series endpoints.
 
 ### When you'd build a screen for this
 
-- **Investor portfolio history chart** (TKT-9 — currently scoped as "Activity feed", but a P&L chart is an obvious next step) uses `historicalBalances.byHolder`.
+- **Investor portfolio history chart** uses `historicalBalances.byHolder`.
 
 ---
 
 ## Other v2-only domains worth knowing about
 
-These show up in `packages/dalp/api-contract/src/routes/v2/v2.contract.ts` but aren't on the critical path for the v1 reference apps. Skim now, drill in when you need them.
+These show up in the v2 SDK surface but aren't on the critical path for the reference apps in this repo. Skim now, drill in when you need them.
 
 | Namespace                | What it is                                                                                                                                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -280,17 +280,17 @@ These show up in `packages/dalp/api-contract/src/routes/v2/v2.contract.ts` but a
 | `client.restate`         | Read-only access to Restate workflow runs (the durable workflow engine that drives all async mutations). Useful for "show me the workflow trace for this transaction".                                      |
 | `client.webhookReceipts` | Delivery log for webhooks sent FROM DALP — each row is "we tried to deliver event X to endpoint Y at time Z, got status N". Pairs with the `webhooks` config surface in [`operational.md`](operational.md). |
 
-For each, the contract file at `packages/dalp/api-contract/src/routes/v2/<domain>/<domain>.v2.contract.ts` is the authoritative shape.
+For each, your SDK type definitions are the authoritative shape.
 
 ---
 
 ## Reference apps cross-link summary
 
-| Reference app screen                       | Methods used                       |
-| ------------------------------------------ | ---------------------------------- |
-| Both apps' org header (eventually)         | `organization.read`                |
-| Investor portfolio chart (TKT-9 evolution) | `historicalBalances.byHolder`      |
-| Everything else                            | Out of scope for v1 reference apps |
+| Reference app screen               | Methods used                       |
+| ---------------------------------- | ---------------------------------- |
+| Both apps' org header (eventually) | `organization.read`                |
+| Investor portfolio chart           | `historicalBalances.byHolder`      |
+| Everything else                    | Out of scope for v1 reference apps |
 
 ---
 
