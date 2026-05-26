@@ -9,7 +9,7 @@ A fully typed TypeScript client for the **Digital Asset Lifecycle Platform** (DA
 
 This file is the LLM-consumable spec. Paste it into Claude, Cursor, or any agent and it has every namespace, every idempotency rule, every error shape, every recipe. Long-tail per-domain detail lives in `references/<domain>.md` — open them on demand.
 
-> **Verify against your SDK version**: the SDK evolves. When the docs name a specific method, field, or error code, the SDK type definitions are the source of truth. If a name doesn't match what your installed `/dalp-sdk` exports, trust the SDK and treat the docs as out of date.
+> **Verify against your SDK version**: the SDK evolves. When the docs name a specific method, field, or error code, the SDK type definitions are the source of truth. If a name doesn't match what your installed `@settlemint/dalp-sdk` exports, trust the SDK and treat the docs as out of date.
 
 > **Source-of-truth note for the agent**: every code example here is mined from real tests in the SDK's canonical test fixtures. If a method isn't in this file, it doesn't exist in the SDK — go to `docs.settlemint.com` (see [What's NOT in the SDK](#whats-not-in-the-sdk)).
 
