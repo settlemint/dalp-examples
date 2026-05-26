@@ -6,14 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
 export default defineConfig({
-  server: { port: 3000 },
+  server: { port: 4321 },
   resolve: {
     alias: { "~": path.resolve(import.meta.dirname, "./src") },
   },
-  plugins: [
-    tailwindcss(),
-    TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
-    tanstackStart(),
-    viteReact(),
-  ],
+  plugins: [tailwindcss(), TanStackRouterVite({ target: "react" }), tanstackStart(), viteReact()],
 });

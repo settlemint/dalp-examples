@@ -33,13 +33,13 @@ function LandingPage() {
         </Button>
         <a
           className="text-sm text-neutral-500 underline hover:text-neutral-900"
-          href="http://localhost:3001"
+          href="http://localhost:4322"
         >
           Investor portal →
         </a>
       </div>
 
-      <div className="text-xs text-neutral-400">Port 3000</div>
+      <div className="text-xs text-neutral-400">Port 4321</div>
     </main>
   );
 }
