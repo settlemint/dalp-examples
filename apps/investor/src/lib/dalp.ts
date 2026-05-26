@@ -3,6 +3,7 @@ import {
   DalpSdkError,
   type DalpPlatformClient,
 } from "@settlemint/dalp-sdk";
+import { toast } from "sonner";
 
 function requireEnv(key: "DALP_API_URL" | "DALP_API_KEY" | "DALP_ORG_ID"): string {
   const value = process.env[key];
@@ -12,18 +13,26 @@ function requireEnv(key: "DALP_API_URL" | "DALP_API_KEY" | "DALP_ORG_ID"): strin
   return value;
 }
 
-let cached: DalpPlatformClient | undefined;
+let adminClient: DalpPlatformClient | undefined;
 
-export function dalp(): DalpPlatformClient {
-  if (cached) {
-    return cached;
+export function dalpAdmin(): DalpPlatformClient {
+  if (adminClient) {
+    return adminClient;
   }
-  cached = createDalpPlatformClient({
+  adminClient = createDalpPlatformClient({
     url: requireEnv("DALP_API_URL"),
     apiKey: requireEnv("DALP_API_KEY"),
     organizationId: requireEnv("DALP_ORG_ID"),
   });
-  return cached;
+  return adminClient;
+}
+
+export function dalpForRequest(cookieHeader: string): DalpPlatformClient {
+  return createDalpPlatformClient({
+    url: requireEnv("DALP_API_URL"),
+    organizationId: requireEnv("DALP_ORG_ID"),
+    cookie: cookieHeader,
+  });
 }
 
 export interface NormalizedDalpError {
@@ -50,4 +59,10 @@ export function normalizeDalpError(error: unknown): NormalizedDalpError {
     return { message: error.message };
   }
   return { message: String(error) };
+}
+
+export function dalpToast(error: unknown): void {
+  const normalized = normalizeDalpError(error);
+  const description = [normalized.why, normalized.fix].filter(Boolean).join(" — ");
+  toast.error(normalized.message, description ? { description } : undefined);
 }

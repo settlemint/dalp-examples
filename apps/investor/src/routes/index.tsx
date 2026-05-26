@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -26,13 +27,19 @@ function LandingPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-3 text-sm text-neutral-500">
-        <span>Port 3001</span>
-        <span>·</span>
-        <a className="underline hover:text-neutral-900" href="http://localhost:3000">
+      <div className="flex items-center gap-3">
+        <Button asChild variant="brand">
+          <Link to="/smoke">Run SDK smoke check</Link>
+        </Button>
+        <a
+          className="text-sm text-neutral-500 underline hover:text-neutral-900"
+          href="http://localhost:3000"
+        >
           Issuer portal →
         </a>
       </div>
+
+      <div className="text-xs text-neutral-400">Port 3001</div>
     </main>
   );
 }

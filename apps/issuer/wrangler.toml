@@ -1,0 +1,12 @@
+name = "dalp-examples-issuer"
+compatibility_date = "2026-05-26"
+compatibility_flags = ["nodejs_compat"]
+main = ".output/server/index.mjs"
+
+[assets]
+directory = ".output/public"
+binding = "ASSETS"
+
+[vars]
+# Set DALP_API_URL / DALP_API_KEY / DALP_ORG_ID via
+# `wrangler secret put <NAME>` — never commit secrets here.
