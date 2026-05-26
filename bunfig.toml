@@ -1,0 +1,6 @@
+[install]
+exact = false
+saveTextLockfile = true
+
+[install.scopes]
+"@settlemint" = "https://registry.npmjs.org/"

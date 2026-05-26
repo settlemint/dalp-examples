@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-brand-50: oklch(0.98 0.01 250);
+  --color-brand-500: oklch(0.55 0.18 250);
+  --color-brand-700: oklch(0.42 0.18 250);
+
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-white text-neutral-900 antialiased;
+  }
+}
