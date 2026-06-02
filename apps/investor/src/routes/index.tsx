@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { ArrowRight } from "lucide-react";
+import { BrandMark } from "~/components/brand-mark";
+import { Button } from "~/components/ui/button";
 import { dalpAdmin, normalizeDalpError } from "~/lib/dalp";
 
 const checkConnection = createServerFn({ method: "GET" }).handler(async () => {
@@ -21,13 +24,7 @@ function LandingPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-start justify-center gap-8 px-6 py-20">
-      <div className="flex items-center gap-3">
-        <div className="size-10 rounded-md bg-brand-500" />
-        <span className="text-lg font-semibold tracking-tight">Acme Capital</span>
-        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700">
-          Investor
-        </span>
-      </div>
+      <BrandMark showProductTag />
 
       <div className="space-y-3">
         <h1 className="text-balance text-4xl font-semibold tracking-tight">
@@ -43,12 +40,12 @@ function LandingPage() {
       <ConnectionStatus status={status} />
 
       <div className="flex items-center gap-3">
-        <Link
-          to="/signup"
-          className="inline-flex items-center justify-center rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          Create your account
-        </Link>
+        <Button asChild variant="brand">
+          <Link to="/signup">
+            Create your account
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </Button>
         <a
           className="text-sm text-neutral-500 underline hover:text-neutral-900"
           href="http://localhost:4321"

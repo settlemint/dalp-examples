@@ -10,12 +10,27 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as VerifyEmailRouteImport } from "./routes/verify-email";
+import { Route as TransfersRouteImport } from "./routes/transfers";
+import { Route as TokensRouteImport } from "./routes/tokens";
 import { Route as SignupRouteImport } from "./routes/signup";
+import { Route as PortfolioRouteImport } from "./routes/portfolio";
+import { Route as KycRouteImport } from "./routes/kyc";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as TokensIdRouteImport } from "./routes/tokens.$id";
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: "/verify-email",
   path: "/verify-email",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const TransfersRoute = TransfersRouteImport.update({
+  id: "/transfers",
+  path: "/transfers",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const TokensRoute = TokensRouteImport.update({
+  id: "/tokens",
+  path: "/tokens",
   getParentRoute: () => rootRouteImport,
 } as any);
 const SignupRoute = SignupRouteImport.update({
@@ -23,39 +38,98 @@ const SignupRoute = SignupRouteImport.update({
   path: "/signup",
   getParentRoute: () => rootRouteImport,
 } as any);
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: "/portfolio",
+  path: "/portfolio",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const KycRoute = KycRouteImport.update({
+  id: "/kyc",
+  path: "/kyc",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
+const TokensIdRoute = TokensIdRouteImport.update({
+  id: "/$id",
+  path: "/$id",
+  getParentRoute: () => TokensRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/kyc": typeof KycRoute;
+  "/portfolio": typeof PortfolioRoute;
   "/signup": typeof SignupRoute;
+  "/tokens": typeof TokensRouteWithChildren;
+  "/transfers": typeof TransfersRoute;
   "/verify-email": typeof VerifyEmailRoute;
+  "/tokens/$id": typeof TokensIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/kyc": typeof KycRoute;
+  "/portfolio": typeof PortfolioRoute;
   "/signup": typeof SignupRoute;
+  "/tokens": typeof TokensRouteWithChildren;
+  "/transfers": typeof TransfersRoute;
   "/verify-email": typeof VerifyEmailRoute;
+  "/tokens/$id": typeof TokensIdRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/kyc": typeof KycRoute;
+  "/portfolio": typeof PortfolioRoute;
   "/signup": typeof SignupRoute;
+  "/tokens": typeof TokensRouteWithChildren;
+  "/transfers": typeof TransfersRoute;
   "/verify-email": typeof VerifyEmailRoute;
+  "/tokens/$id": typeof TokensIdRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/signup" | "/verify-email";
+  fullPaths:
+    | "/"
+    | "/kyc"
+    | "/portfolio"
+    | "/signup"
+    | "/tokens"
+    | "/transfers"
+    | "/verify-email"
+    | "/tokens/$id";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/signup" | "/verify-email";
-  id: "__root__" | "/" | "/signup" | "/verify-email";
+  to:
+    | "/"
+    | "/kyc"
+    | "/portfolio"
+    | "/signup"
+    | "/tokens"
+    | "/transfers"
+    | "/verify-email"
+    | "/tokens/$id";
+  id:
+    | "__root__"
+    | "/"
+    | "/kyc"
+    | "/portfolio"
+    | "/signup"
+    | "/tokens"
+    | "/transfers"
+    | "/verify-email"
+    | "/tokens/$id";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  KycRoute: typeof KycRoute;
+  PortfolioRoute: typeof PortfolioRoute;
   SignupRoute: typeof SignupRoute;
+  TokensRoute: typeof TokensRouteWithChildren;
+  TransfersRoute: typeof TransfersRoute;
   VerifyEmailRoute: typeof VerifyEmailRoute;
 }
 
@@ -68,11 +142,39 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof VerifyEmailRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/transfers": {
+      id: "/transfers";
+      path: "/transfers";
+      fullPath: "/transfers";
+      preLoaderRoute: typeof TransfersRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/tokens": {
+      id: "/tokens";
+      path: "/tokens";
+      fullPath: "/tokens";
+      preLoaderRoute: typeof TokensRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/signup": {
       id: "/signup";
       path: "/signup";
       fullPath: "/signup";
       preLoaderRoute: typeof SignupRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/portfolio": {
+      id: "/portfolio";
+      path: "/portfolio";
+      fullPath: "/portfolio";
+      preLoaderRoute: typeof PortfolioRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/kyc": {
+      id: "/kyc";
+      path: "/kyc";
+      fullPath: "/kyc";
+      preLoaderRoute: typeof KycRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/": {
@@ -82,12 +184,33 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/tokens/$id": {
+      id: "/tokens/$id";
+      path: "/$id";
+      fullPath: "/tokens/$id";
+      preLoaderRoute: typeof TokensIdRouteImport;
+      parentRoute: typeof TokensRoute;
+    };
   }
 }
 
+interface TokensRouteChildren {
+  TokensIdRoute: typeof TokensIdRoute;
+}
+
+const TokensRouteChildren: TokensRouteChildren = {
+  TokensIdRoute: TokensIdRoute,
+};
+
+const TokensRouteWithChildren = TokensRoute._addFileChildren(TokensRouteChildren);
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  KycRoute: KycRoute,
+  PortfolioRoute: PortfolioRoute,
   SignupRoute: SignupRoute,
+  TokensRoute: TokensRouteWithChildren,
+  TransfersRoute: TransfersRoute,
   VerifyEmailRoute: VerifyEmailRoute,
 };
 export const routeTree = rootRouteImport

@@ -90,7 +90,7 @@ console.log(settled.events);          // decoded event chain
 ### When you'd build a screen for this
 
 - **Investor "deploy in progress" / "transfer in progress" status UI** uses `transaction.read` to drive a poll loop after any async mutation after any async mutation.
-- **Issuer Bond Dashboard → Transactions tab** is `client.user.events` filtered to this token, not `transaction.read`. `transaction.read` is the drill-in detail after a click.
+- **Issuer Token Console → Activity tab** (`/console/tokens/$id`) is `client.user.events` filtered to this token, not `transaction.read`. `transaction.read` is the drill-in detail after a click.
 
 ---
 
@@ -139,13 +139,14 @@ Per-user address book. An investor can label wallets they transfer to repeatedly
 
 ### Methods
 
+The v2 `contacts` namespace exposes exactly four methods — **`{ list, read, upsert, delete }`**. There is **no `contacts.search` on v2** (it was a v1-only route, never wired into the dapi client; calling it fails at runtime). For live keystroke filtering, call `contacts.list` and filter the returned items client-side.
+
 | Method                   | Path                        | Idempotency | Sync/async |
 | ------------------------ | --------------------------- | ----------- | ---------- |
 | `client.contacts.list`   | GET `/api/contacts`         | n/a         | sync       |
 | `client.contacts.read`   | GET `/api/contacts/{id}`    | n/a         | sync       |
 | `client.contacts.upsert` | POST `/api/contacts`        | optional    | sync       |
 | `client.contacts.delete` | DELETE `/api/contacts/{id}` | required    | sync       |
-| `client.contacts.search` | GET `/api/contacts/search`  | n/a         | sync       |
 
 ### Recipe: List + paginate contacts
 
@@ -187,15 +188,25 @@ await client.contacts.delete({
 });
 ```
 
-### Recipe: Search contacts by name / wallet
+### Recipe: Transfer-form recipient autocomplete (client-side filter)
+
+v2 has no `contacts.search`. Power the live keystroke autocomplete by listing contacts once and filtering the items in the app by the typed query (name prefix OR wallet prefix):
 
 ```ts
-const matches = await client.contacts.search({
-  query: { q: "0x71C76" }, // matches by name prefix OR wallet prefix
+const contacts = await client.contacts.list({
+  query: { page: { limit: 100, offset: 0 }, sortBy: "name", sortDirection: "asc" },
 });
+
+function filterContacts(query: string) {
+  const q = query.trim().toLowerCase();
+  if (q.length === 0) return contacts.data;
+  return contacts.data.filter(
+    (c) => c.name.toLowerCase().includes(q) || c.wallet.toLowerCase().includes(q),
+  );
+}
 ```
 
-Use `contacts.search` for the transfer-form autocomplete (live keystroke search); use `contacts.list` for the contacts management page.
+Use the same `contacts.list` read for both the transfer-form autocomplete (filter client-side) and the contacts management page.
 
 ### Common errors (contacts)
 
@@ -207,6 +218,6 @@ Use `contacts.search` for the transfer-form autocomplete (live keystroke search)
 
 ### When you'd build a screen for this
 
-- **Investor transfer form** uses `contacts.search` to autocomplete the "to" field.
-- **Issuer XvP / settlement counterparty picker** (out of scope for v1 apps) would use `contacts.list` + `contacts.search`.
+- **Investor transfer form** uses `contacts.list` + a client-side filter to autocomplete the "to" field (there is no `contacts.search` on v2).
+- **Issuer XvP / settlement counterparty picker** (out of scope for v1 apps) would use `contacts.list` (filtering items in the app).
 - **Settings → Contacts management page** (out of scope for v1) would use the full CRUD.

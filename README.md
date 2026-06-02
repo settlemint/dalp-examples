@@ -7,8 +7,9 @@ Two apps share one critical handshake: investor submits KYC → issuer approves 
 ```
 dalp-examples/
 ├── SKILL.md          ← the LLM-consumable SDK spec
-├── apps/issuer/      ← localhost:3000
-├── apps/investor/    ← localhost:3001
+├── references/       ← per-domain SDK reference docs
+├── apps/issuer/      ← localhost:4321
+├── apps/investor/    ← localhost:4322
 └── …
 ```
 
@@ -22,7 +23,9 @@ cp apps/investor/.env.example apps/investor/.env.local
 bun run dev
 ```
 
-Open <http://localhost:3000> for the issuer, <http://localhost:3001> for the investor.
+Open <http://localhost:4321> for the issuer, <http://localhost:4322> for the investor.
+
+On a fresh checkout, both apps show an amber "DALP backend not reachable" connection badge until you fill `.env.local` with `DALP_API_URL`, `DALP_API_KEY`, and `DALP_ORG_ID`.
 
 ## Stack
 
