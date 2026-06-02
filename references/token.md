@@ -218,8 +218,8 @@ await client.token.setCap({
 ### When you'd build a screen for this
 
 - **Issuer Token Setup → Create & Deploy** uses `token.create`.
-- **Issuer Bond Dashboard header** uses `token.read` + `token.metadata` + `token.features`.
-- **Mint / Distribute / Freeze actions** in the dashboard's right panel use `token.mint` / `token.transfer` / `token.freezeAddress` / `token.freezePartial`.
+- **Issuer Token Console header** (`/console/tokens/$id`) uses `token.read` + `token.metadata` + `token.features`.
+- **Mint / Distribute / Freeze actions** in the console's action panel use `token.mint` / `token.transfer` / `token.freezeAddress` / `token.freezePartial`.
 - **Investor Browse** uses `token.list({ query: { page } })`.
 - **Investor Transfer flow** uses `token.transfer` and must surface compliance 409s cleanly.
 
@@ -271,7 +271,7 @@ A token's compliance is the union of all attached modules. A transfer that fails
 ### When you'd build a screen for this
 
 - **Issuer Reserve Token wizard → Compliance Modules step** — multi-select cards write the chosen modules into the token-create body's `compliance` field.
-- **Bond Dashboard → Compliance tab** reads `token.compliance` to show which modules are enabled.
+- **Token Console → Compliance tab** (`/console/tokens/$id`) reads `token.compliance` to show which modules are enabled.
 
 ---
 
@@ -310,8 +310,8 @@ if (holder.data.holder) {
 
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Bondholders tab** uses `token.holders`.
-- **Bond Dashboard → Top Investors pie chart** uses `token.holders({ query: { page: { limit: 5 } } })`.
+- **Token Console → Holders tab** (`/console/tokens/$id`) uses `token.holders`.
+- **Token Console → Overview → Top Investors** uses `token.holders({ query: { page: { limit: 5 } } })`.
 - **Investor Asset detail → My balance** uses `token.holder({ query: { holderAddress: me } })`.
 
 ---
@@ -420,7 +420,7 @@ Calling `getDownloadUrl` on a non-latest version of a versioned document throws 
 
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Documents tab** uses `documents.list` + `documents.getDownloadUrl`.
+- **Token Console Documents section** (`/console/tokens/$id`, not built in v1) would use `documents.list` + `documents.getDownloadUrl`.
 - Document upload UI is **out of scope for the v1 reference apps in this repo** — the SDK supports it, the v1 apps don't include it yet. If you need it, this recipe is the canonical wire-up.
 
 ---
@@ -452,8 +452,8 @@ for (const event of events.data) {
 
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Statistics chart** (Yield / Supply / Volume) renders time-series from `token.events({ query: { sortBy: "blockTimestamp", sortDirection: "desc" } })`.
-- **Bond Dashboard → Investors → Transfers** uses `token.events({ query: { filters: [{ id: "eventType", operator: "eq", value: "Transfer" }] } })`.
+- **Token Console → Overview statistics** (Yield / Supply / Volume) renders time-series from `token.events({ query: { sortBy: "blockTimestamp", sortDirection: "desc" } })`.
+- **Token Console → Activity tab** uses `token.events({ query: { filters: [{ id: "eventType", operator: "eq", value: "Transfer" }] } })`.
 
 ---
 
@@ -529,22 +529,22 @@ for (const bucket of distribution.data.buckets) {
 
 ### When you'd build a screen for this
 
-- **Bond Dashboard → Overview → Supply panel + Statistics chart** uses `statsTotalSupply`, `statsSupplyChanges`, `statsVolume`.
-- **Bond Dashboard → Right rail → Wallet distribution pie** uses `statsWalletDistribution`.
+- **Token Console → Overview → Supply panel + statistics** (`/console/tokens/$id`) uses `statsTotalSupply`, `statsSupplyChanges`, `statsVolume`.
+- **Token Console → Overview → Wallet distribution** uses `statsWalletDistribution`.
 
 ---
 
 ## Reference apps cross-link summary
 
-| Reference app screen                   | Token methods used                                                                                           |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Issuer Reserve Token wizard            | client-side state only — compliance module choices bundle into `token.create` body                           |
-| Issuer Token Setup → Create & Deploy   | `token.create`                                                                                               |
-| Issuer Bond Dashboard header           | `token.read`, `token.metadata`, `token.features`                                                             |
-| Issuer Bond Dashboard supply/stats     | `token.statsTotalSupply`, `token.statsSupplyChanges`, `token.statsVolume`, `token.statsWalletDistribution`   |
-| Issuer Bond Dashboard Bondholders      | `token.holders`                                                                                              |
-| Issuer Bond Dashboard Transfers/Events | `token.events`                                                                                               |
-| Issuer mutation actions                | `token.mint`, `token.transfer`, `token.freezeAddress`, `token.freezePartial`, `token.pause`, `token.unpause` |
-| Investor Browse                        | `token.list`                                                                                                 |
-| Investor Asset detail                  | `token.read`, `token.metadata`, `token.holder`                                                               |
-| Investor Transfer                      | `token.transfer`                                                                                             |
+| Reference app screen                                | Token methods used                                                                                           |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Issuer Reserve Token wizard                         | client-side state only — compliance module choices bundle into `token.create` body                           |
+| Issuer Token Setup → Create & Deploy                | `token.create`                                                                                               |
+| Issuer Token Console header (`/console/tokens/$id`) | `token.read`, `token.metadata`, `token.features`                                                             |
+| Issuer Token Console Overview supply/stats          | `token.statsTotalSupply`, `token.statsSupplyChanges`, `token.statsVolume`, `token.statsWalletDistribution`   |
+| Issuer Token Console Holders tab                    | `token.holders`                                                                                              |
+| Issuer Token Console Activity tab                   | `token.events`                                                                                               |
+| Issuer mutation actions                             | `token.mint`, `token.transfer`, `token.freezeAddress`, `token.freezePartial`, `token.pause`, `token.unpause` |
+| Investor Browse                                     | `token.list`                                                                                                 |
+| Investor Asset detail                               | `token.read`, `token.metadata`, `token.holder`                                                               |
+| Investor Transfer                                   | `token.transfer`                                                                                             |

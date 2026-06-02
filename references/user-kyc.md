@@ -148,9 +148,10 @@ const draft = await client.user.kyc.versions.create({
   params: { userId: me.data.id },
   body: {
     // initial draft fields — full form is filled via version.update later
-    fullName: "Ada Example",
-    dateOfBirth: "1985-04-12",
-    countryCode: "DE",
+    firstName: "Ada",
+    lastName: "Example",
+    dob: "1985-04-12", // ISO date
+    country: "DE", // ISO code
     walletVerification,
   },
 });
@@ -160,20 +161,21 @@ const versionId = draft.data.id;
 
 ### Recipe: Issuer paginates the pending review queue
 
+`versions.list` takes a **flat** input (no `params` / `query` / `filters` envelope) and returns `{ items, total, limit, offset }` (no `.data`). `userId` is an optional field in the same flat object; `statuses` is a flat string array:
+
 ```ts
 const queue = await client.user.kyc.versions.list({
-  params: { userId }, // any user the caller can read
-  query: {
-    filters: [{ id: "status", operator: "eq", value: "submitted" }],
-    page: { limit: 25, offset: 0 },
-    sortBy: "submittedAt",
-    sortDirection: "desc",
-  },
+  userId, // optional — any user the caller can read
+  statuses: ["submitted", "under_review"],
+  limit: 25,
+  offset: 0,
+  orderDirection: "desc",
 });
 
-for (const version of queue.data) {
+for (const version of queue.items) {
   console.log(version.id, version.status, version.submittedAt);
 }
+console.log(queue.total);
 ```
 
 > The submission-review queue on the issuer side queries this list across all users (`kyc.versions.list` per user) — the dapp / reference app holds the iteration. There is no single cross-user "incoming queue" endpoint; build it client-side via a v2 list of users + per-user version list.
@@ -181,11 +183,19 @@ for (const version of queue.data) {
 ### When you'd build a screen for this
 
 - **Investor KYC submission form** uses `versions.create` → `version.update` → `version.submit`.
-- **Issuer KYC Review queue** uses `versions.list({ filters: [{ id: "status", value: "submitted" }] })` per user surfaced in the user list.
+- **Issuer KYC Review queue** uses `versions.list({ userId, statuses: ["submitted", "under_review"], limit, offset, orderDirection })` per user surfaced in the user list.
 
 ---
 
 ## user.kyc.version (`client.user.kyc.version.*`)
+
+> **Field names are contract-verified.** The real KYC version object exposes exactly:
+> `firstName`, `lastName`, `dob` (ISO date), `country` (ISO code),
+> `residencyStatus` (`"resident" | "non_resident" | "dual_resident" | "unknown"`), and `nationalId`.
+> The review/status fields are `status`, `reviewNotes`, `rejectionReason`, `documentsCount`, `canReview`.
+> There is no `fullName`, `dateOfBirth`, `countryCode`, `nationality`, or `address`/`city`/`postalCode`.
+> [`apps/issuer/src/lib/kyc.ts`](../apps/issuer/src/lib/kyc.ts) mined these from the real oRPC contract and is the
+> source of truth; earlier revisions of this doc paraphrased the shapes and were wrong.
 
 ### Overview
 
@@ -209,15 +219,12 @@ Per-version operations — read full version data, update a draft, submit for re
 await client.user.kyc.version.update({
   params: { versionId },
   body: {
-    fullName: "Ada Example",
-    dateOfBirth: "1985-04-12",
-    countryCode: "DE",
-    nationality: "DE",
-    addressLine1: "Musterstraße 1",
-    city: "Berlin",
-    postalCode: "10115",
-    pep: false,
-    sanctions: false,
+    firstName: "Ada",
+    lastName: "Example",
+    dob: "1985-04-12", // ISO date
+    country: "DE", // ISO code
+    residencyStatus: "resident", // "resident" | "non_resident" | "dual_resident" | "unknown"
+    nationalId: "L01X00T47",
   },
 });
 
@@ -234,7 +241,8 @@ await client.user.kyc.version.submit({
 const approved = await client.user.kyc.version.approve({
   params: { versionId },
   body: {
-    walletVerification,
+    reviewNotes: "ID + proof of address verified against the sanctions list.", // optional
+    walletVerification, // { secretVerificationCode: <pincode>, verificationType: "PINCODE" }
     idempotencyKey,
   },
 });
@@ -256,7 +264,7 @@ const status = await pollStatus(approved.data.statusUrl);
 await client.user.kyc.version.reject({
   params: { versionId },
   body: {
-    reason:
+    rejectionReason:
       "Document quality insufficient — re-upload proof of address with all four corners visible.",
     walletVerification,
     idempotencyKey,
@@ -272,8 +280,8 @@ await client.user.kyc.version.reject({
 const requested = await client.user.kyc.version.requestUpdate({
   params: { versionId },
   body: {
-    requestedFields: ["addressLine1", "postalCode"],
-    note: "Address does not match the proof of residence document.",
+    requiredFields: ["country", "nationalId"],
+    reason: "Nationality details do not match the proof of residence document.",
     walletVerification,
     idempotencyKey,
   },
@@ -289,7 +297,7 @@ console.log(requested.data.newDraftVersionId);
 | ---------------------------- | ------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `KYC_INVALID_TRANSITION`     | 409    | Approving an already-approved version, or submitting a draft that's been superseded | Surface the current `latestStatus` and refresh the UI |
 | `KYC_INSUFFICIENT_ROLES`     | 403    | Caller lacks `kycReviewer` / `kycApprover` role                                     | Don't auto-retry; route to admin                      |
-| `KYC_VALIDATION_FAILED`      | 422    | Missing required fields on submit (e.g. no `fullName`)                              | Inspect `error.details` for the missing field paths   |
+| `KYC_VALIDATION_FAILED`      | 422    | Missing required fields on submit (e.g. no `firstName` / `lastName`)                | Inspect `error.details` for the missing field paths   |
 | `WALLET_VERIFICATION_FAILED` | 403    | Stale or replayed `walletVerification`                                              | Re-prompt for pincode / passkey                       |
 
 ### When you'd build a screen for this
@@ -431,15 +439,12 @@ const versionId = draft.data.id;
 await investorClient.user.kyc.version.update({
   params: { versionId },
   body: {
-    fullName: "Ada Example",
-    dateOfBirth: "1985-04-12",
-    countryCode: "DE",
-    nationality: "DE",
-    addressLine1: "Musterstraße 1",
-    city: "Berlin",
-    postalCode: "10115",
-    pep: false,
-    sanctions: false,
+    firstName: "Ada",
+    lastName: "Example",
+    dob: "1985-04-12", // ISO date
+    country: "DE", // ISO code
+    residencyStatus: "resident", // "resident" | "non_resident" | "dual_resident" | "unknown"
+    nationalId: "L01X00T47",
   },
 });
 
@@ -455,8 +460,11 @@ await investorClient.user.kyc.version.submit({
 
 // 4. The version appears in the issuer's review queue
 const queue = await issuerClient.user.kyc.versions.list({
-  params: { userId: me.data.id },
-  query: { filters: [{ id: "status", operator: "eq", value: "submitted" }] },
+  userId: me.data.id,
+  statuses: ["submitted", "under_review"],
+  limit: 25,
+  offset: 0,
+  orderDirection: "desc",
 });
 
 // 5. Issuer reads + approves — THIS is where the on-chain claim gets minted

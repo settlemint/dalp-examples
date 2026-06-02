@@ -306,10 +306,10 @@ Verify the exact method shape — typically `client.webhooks.deliveries.list({ p
 
 ## Reference apps cross-link summary
 
-| Reference app screen                                      | Methods used                                                                      |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Issuer Reserve Token → Bond denomination selector         | `externalToken.list`                                                              |
-| Issuer Bond Dashboard → Actions tab (out of scope for v1) | `actions.list`                                                                    |
-| Issuer admin → Recover wallet (out of scope for v1)       | `identityRecovery.preview`, `identityRecovery.execute`, `identityRecovery.status` |
-| Investor Asset detail → FX display (optional in v1)       | `exchangeRates.read`                                                              |
-| Platform admin → Webhooks (out of scope for v1)           | `webhooks.*`                                                                      |
+| Reference app screen                                 | Methods used                                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Issuer Reserve Token → Bond denomination selector    | `externalToken.list`                                                              |
+| Issuer Token Console → Actions (out of scope for v1) | `actions.list`                                                                    |
+| Issuer admin → Recover wallet (out of scope for v1)  | `identityRecovery.preview`, `identityRecovery.execute`, `identityRecovery.status` |
+| Investor Asset detail → FX display (optional in v1)  | `exchangeRates.read`                                                              |
+| Platform admin → Webhooks (out of scope for v1)      | `webhooks.*`                                                                      |

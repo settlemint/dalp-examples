@@ -9,38 +9,172 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
+import { Route as SigninRouteImport } from "./routes/signin";
+import { Route as ConsoleRouteImport } from "./routes/console";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as ConsoleIndexRouteImport } from "./routes/console.index";
+import { Route as ConsoleTokensRouteImport } from "./routes/console.tokens";
+import { Route as ConsoleKycRouteImport } from "./routes/console.kyc";
+import { Route as ConsoleTokensIndexRouteImport } from "./routes/console.tokens.index";
+import { Route as ConsoleKycIndexRouteImport } from "./routes/console.kyc.index";
+import { Route as ConsoleTokensNewRouteImport } from "./routes/console.tokens.new";
+import { Route as ConsoleTokensIdRouteImport } from "./routes/console.tokens.$id";
+import { Route as ConsoleKycVersionIdRouteImport } from "./routes/console.kyc.$versionId";
 
+const SigninRoute = SigninRouteImport.update({
+  id: "/signin",
+  path: "/signin",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: "/console",
+  path: "/console",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
+const ConsoleIndexRoute = ConsoleIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => ConsoleRoute,
+} as any);
+const ConsoleTokensRoute = ConsoleTokensRouteImport.update({
+  id: "/tokens",
+  path: "/tokens",
+  getParentRoute: () => ConsoleRoute,
+} as any);
+const ConsoleKycRoute = ConsoleKycRouteImport.update({
+  id: "/kyc",
+  path: "/kyc",
+  getParentRoute: () => ConsoleRoute,
+} as any);
+const ConsoleTokensIndexRoute = ConsoleTokensIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => ConsoleTokensRoute,
+} as any);
+const ConsoleKycIndexRoute = ConsoleKycIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => ConsoleKycRoute,
+} as any);
+const ConsoleTokensNewRoute = ConsoleTokensNewRouteImport.update({
+  id: "/new",
+  path: "/new",
+  getParentRoute: () => ConsoleTokensRoute,
+} as any);
+const ConsoleTokensIdRoute = ConsoleTokensIdRouteImport.update({
+  id: "/$id",
+  path: "/$id",
+  getParentRoute: () => ConsoleTokensRoute,
+} as any);
+const ConsoleKycVersionIdRoute = ConsoleKycVersionIdRouteImport.update({
+  id: "/$versionId",
+  path: "/$versionId",
+  getParentRoute: () => ConsoleKycRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/console": typeof ConsoleRouteWithChildren;
+  "/signin": typeof SigninRoute;
+  "/console/kyc": typeof ConsoleKycRouteWithChildren;
+  "/console/tokens": typeof ConsoleTokensRouteWithChildren;
+  "/console/": typeof ConsoleIndexRoute;
+  "/console/kyc/$versionId": typeof ConsoleKycVersionIdRoute;
+  "/console/tokens/$id": typeof ConsoleTokensIdRoute;
+  "/console/tokens/new": typeof ConsoleTokensNewRoute;
+  "/console/kyc/": typeof ConsoleKycIndexRoute;
+  "/console/tokens/": typeof ConsoleTokensIndexRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/signin": typeof SigninRoute;
+  "/console": typeof ConsoleIndexRoute;
+  "/console/kyc/$versionId": typeof ConsoleKycVersionIdRoute;
+  "/console/tokens/$id": typeof ConsoleTokensIdRoute;
+  "/console/tokens/new": typeof ConsoleTokensNewRoute;
+  "/console/kyc": typeof ConsoleKycIndexRoute;
+  "/console/tokens": typeof ConsoleTokensIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/console": typeof ConsoleRouteWithChildren;
+  "/signin": typeof SigninRoute;
+  "/console/kyc": typeof ConsoleKycRouteWithChildren;
+  "/console/tokens": typeof ConsoleTokensRouteWithChildren;
+  "/console/": typeof ConsoleIndexRoute;
+  "/console/kyc/$versionId": typeof ConsoleKycVersionIdRoute;
+  "/console/tokens/$id": typeof ConsoleTokensIdRoute;
+  "/console/tokens/new": typeof ConsoleTokensNewRoute;
+  "/console/kyc/": typeof ConsoleKycIndexRoute;
+  "/console/tokens/": typeof ConsoleTokensIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/";
+  fullPaths:
+    | "/"
+    | "/console"
+    | "/signin"
+    | "/console/kyc"
+    | "/console/tokens"
+    | "/console/"
+    | "/console/kyc/$versionId"
+    | "/console/tokens/$id"
+    | "/console/tokens/new"
+    | "/console/kyc/"
+    | "/console/tokens/";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/";
-  id: "__root__" | "/";
+  to:
+    | "/"
+    | "/signin"
+    | "/console"
+    | "/console/kyc/$versionId"
+    | "/console/tokens/$id"
+    | "/console/tokens/new"
+    | "/console/kyc"
+    | "/console/tokens";
+  id:
+    | "__root__"
+    | "/"
+    | "/console"
+    | "/signin"
+    | "/console/kyc"
+    | "/console/tokens"
+    | "/console/"
+    | "/console/kyc/$versionId"
+    | "/console/tokens/$id"
+    | "/console/tokens/new"
+    | "/console/kyc/"
+    | "/console/tokens/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  ConsoleRoute: typeof ConsoleRouteWithChildren;
+  SigninRoute: typeof SigninRoute;
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
+    "/signin": {
+      id: "/signin";
+      path: "/signin";
+      fullPath: "/signin";
+      preLoaderRoute: typeof SigninRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/console": {
+      id: "/console";
+      path: "/console";
+      fullPath: "/console";
+      preLoaderRoute: typeof ConsoleRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/": {
       id: "/";
       path: "/";
@@ -48,11 +182,111 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/console/": {
+      id: "/console/";
+      path: "/";
+      fullPath: "/console/";
+      preLoaderRoute: typeof ConsoleIndexRouteImport;
+      parentRoute: typeof ConsoleRoute;
+    };
+    "/console/tokens": {
+      id: "/console/tokens";
+      path: "/tokens";
+      fullPath: "/console/tokens";
+      preLoaderRoute: typeof ConsoleTokensRouteImport;
+      parentRoute: typeof ConsoleRoute;
+    };
+    "/console/kyc": {
+      id: "/console/kyc";
+      path: "/kyc";
+      fullPath: "/console/kyc";
+      preLoaderRoute: typeof ConsoleKycRouteImport;
+      parentRoute: typeof ConsoleRoute;
+    };
+    "/console/tokens/": {
+      id: "/console/tokens/";
+      path: "/";
+      fullPath: "/console/tokens/";
+      preLoaderRoute: typeof ConsoleTokensIndexRouteImport;
+      parentRoute: typeof ConsoleTokensRoute;
+    };
+    "/console/kyc/": {
+      id: "/console/kyc/";
+      path: "/";
+      fullPath: "/console/kyc/";
+      preLoaderRoute: typeof ConsoleKycIndexRouteImport;
+      parentRoute: typeof ConsoleKycRoute;
+    };
+    "/console/tokens/new": {
+      id: "/console/tokens/new";
+      path: "/new";
+      fullPath: "/console/tokens/new";
+      preLoaderRoute: typeof ConsoleTokensNewRouteImport;
+      parentRoute: typeof ConsoleTokensRoute;
+    };
+    "/console/tokens/$id": {
+      id: "/console/tokens/$id";
+      path: "/$id";
+      fullPath: "/console/tokens/$id";
+      preLoaderRoute: typeof ConsoleTokensIdRouteImport;
+      parentRoute: typeof ConsoleTokensRoute;
+    };
+    "/console/kyc/$versionId": {
+      id: "/console/kyc/$versionId";
+      path: "/$versionId";
+      fullPath: "/console/kyc/$versionId";
+      preLoaderRoute: typeof ConsoleKycVersionIdRouteImport;
+      parentRoute: typeof ConsoleKycRoute;
+    };
   }
 }
 
+interface ConsoleKycRouteChildren {
+  ConsoleKycVersionIdRoute: typeof ConsoleKycVersionIdRoute;
+  ConsoleKycIndexRoute: typeof ConsoleKycIndexRoute;
+}
+
+const ConsoleKycRouteChildren: ConsoleKycRouteChildren = {
+  ConsoleKycVersionIdRoute: ConsoleKycVersionIdRoute,
+  ConsoleKycIndexRoute: ConsoleKycIndexRoute,
+};
+
+const ConsoleKycRouteWithChildren = ConsoleKycRoute._addFileChildren(ConsoleKycRouteChildren);
+
+interface ConsoleTokensRouteChildren {
+  ConsoleTokensIdRoute: typeof ConsoleTokensIdRoute;
+  ConsoleTokensNewRoute: typeof ConsoleTokensNewRoute;
+  ConsoleTokensIndexRoute: typeof ConsoleTokensIndexRoute;
+}
+
+const ConsoleTokensRouteChildren: ConsoleTokensRouteChildren = {
+  ConsoleTokensIdRoute: ConsoleTokensIdRoute,
+  ConsoleTokensNewRoute: ConsoleTokensNewRoute,
+  ConsoleTokensIndexRoute: ConsoleTokensIndexRoute,
+};
+
+const ConsoleTokensRouteWithChildren = ConsoleTokensRoute._addFileChildren(
+  ConsoleTokensRouteChildren,
+);
+
+interface ConsoleRouteChildren {
+  ConsoleKycRoute: typeof ConsoleKycRouteWithChildren;
+  ConsoleTokensRoute: typeof ConsoleTokensRouteWithChildren;
+  ConsoleIndexRoute: typeof ConsoleIndexRoute;
+}
+
+const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleKycRoute: ConsoleKycRouteWithChildren,
+  ConsoleTokensRoute: ConsoleTokensRouteWithChildren,
+  ConsoleIndexRoute: ConsoleIndexRoute,
+};
+
+const ConsoleRouteWithChildren = ConsoleRoute._addFileChildren(ConsoleRouteChildren);
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConsoleRoute: ConsoleRouteWithChildren,
+  SigninRoute: SigninRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

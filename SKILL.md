@@ -57,6 +57,8 @@ const tokens = await dalp.token.list({ query: {} });
 **`apiKey`** is created in the DALP dashboard: Settings → API keys → Create. Format: `sm_dalp_…`. Server-side only; never ship in browser bundles.
 **`organizationId`** sent as `x-organization-id` when set. Required for any user with access to more than one organization.
 
+> **The reference apps use `createDalpPlatformClient`, not the headline `createDalpClient`.** `createDalpClient` above is the read-only DAPI-only variant shown for brevity; the issuer/investor apps need bundled Better Auth + DAPI with a shared cookie store, so they build their clients with `createDalpPlatformClient` (see [Three client factories](#three-client-factories--which-one-when)). Each app splits this across three lib files: `dalp.ts` holds the client factories (server-side, reads `process.env`), `dalp-errors.ts` is client-SAFE (just `normalizeDalpError` / `dalpToast` — importable into the browser bundle), and `dalp.server.ts` is server-ONLY (request/response cookie helpers that pull in `@tanstack/react-start/server`, barred from client code).
+
 ---
 
 ## Three client factories — which one when

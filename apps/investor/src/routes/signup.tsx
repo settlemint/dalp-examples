@@ -2,6 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useState, type FormEvent } from "react";
 import { Button } from "~/components/ui/button";
+import { Field } from "~/components/ui/field";
+import { Input } from "~/components/ui/input";
+import { Select } from "~/components/ui/select";
 import { dalpAnonymous, normalizeDalpError } from "~/lib/dalp";
 
 interface SignUpInput {
@@ -90,25 +93,80 @@ const COUNTRIES: { code: string; label: string }[] = [
   { code: "CA", label: "Canada" },
 ];
 
+interface SignupFormValues {
+  name: string;
+  email: string;
+  password: string;
+  country: string;
+  province: string;
+}
+
+const EMPTY_SIGNUP_VALUES: SignupFormValues = {
+  name: "",
+  email: "",
+  password: "",
+  country: "",
+  province: "",
+};
+
+type SignupFieldErrors = Partial<Record<keyof SignupFormValues, string>>;
+
+/** Inline per-field validation, mirroring the KYC + transfer forms. */
+function validateSignup(values: SignupFormValues): SignupFieldErrors {
+  const errors: SignupFieldErrors = {};
+  if (!values.name.trim()) {
+    errors.name = "Enter your full name.";
+  }
+  if (!values.email.includes("@")) {
+    errors.email = "Enter a valid email address.";
+  }
+  if (values.password.length < 8) {
+    errors.password = "Use at least 8 characters.";
+  }
+  if (!values.country) {
+    errors.country = "Select your country.";
+  }
+  return errors;
+}
+
 function SignupPage() {
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [values, setValues] = useState<SignupFormValues>(EMPTY_SIGNUP_VALUES);
+  const [errors, setErrors] = useState<SignupFieldErrors>({});
+
+  function update<K extends keyof SignupFormValues>(key: K, value: SignupFormValues[K]) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => {
+      if (!prev[key]) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const validation = validateSignup(values);
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) {
+      return;
+    }
+
     setPending(true);
     setError(null);
-
-    const form = new FormData(event.currentTarget);
     try {
       const result = await signUp({
         data: {
-          email: form.get("email"),
-          password: form.get("password"),
-          name: form.get("name"),
-          country: form.get("country"),
-          province: form.get("province"),
+          email: values.email.trim(),
+          password: values.password,
+          name: values.name.trim(),
+          country: values.country,
+          province: values.province.trim(),
         },
       });
 
@@ -128,7 +186,7 @@ function SignupPage() {
   return (
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <section className="flex items-center justify-center px-6 py-12 lg:py-20">
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6" noValidate>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="size-8 rounded-md bg-brand-500" />
@@ -146,31 +204,82 @@ function SignupPage() {
             </p>
           </div>
 
-          <div className="space-y-4">
-            <Field name="name" label="Full name" type="text" required autoComplete="name" />
-            <Field name="email" label="Email" type="email" required autoComplete="email" />
-            <Field
-              name="password"
-              label="Password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              hint="Minimum 8 characters."
-            />
+          <fieldset disabled={pending} className="space-y-4">
+            <Field label="Full name" required error={errors.name}>
+              {(control) => (
+                <Input
+                  {...control}
+                  name="name"
+                  autoComplete="name"
+                  value={values.name}
+                  onChange={(event) => update("name", event.target.value)}
+                />
+              )}
+            </Field>
+            <Field label="Email" required error={errors.email}>
+              {(control) => (
+                <Input
+                  {...control}
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={values.email}
+                  onChange={(event) => update("email", event.target.value)}
+                />
+              )}
+            </Field>
+            <Field label="Password" required error={errors.password} hint="Minimum 8 characters.">
+              {(control) => (
+                <Input
+                  {...control}
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={values.password}
+                  onChange={(event) => update("password", event.target.value)}
+                />
+              )}
+            </Field>
             <div className="grid grid-cols-2 gap-3">
-              <SelectField name="country" label="Country" required options={COUNTRIES} />
-              <Field
-                name="province"
-                label="State / Province"
-                type="text"
-                autoComplete="address-level1"
-              />
+              <Field label="Country" required error={errors.country}>
+                {(control) => (
+                  <Select
+                    {...control}
+                    name="country"
+                    value={values.country}
+                    onChange={(event) => update("country", event.target.value)}
+                  >
+                    <option value="" disabled>
+                      Select…
+                    </option>
+                    {COUNTRIES.map((option) => (
+                      <option key={option.code} value={option.code}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </Field>
+              <Field label="State / Province">
+                {(control) => (
+                  <Input
+                    {...control}
+                    name="province"
+                    autoComplete="address-level1"
+                    value={values.province}
+                    onChange={(event) => update("province", event.target.value)}
+                  />
+                )}
+              </Field>
             </div>
-          </div>
+          </fieldset>
 
           {error ? (
-            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-900"
+            >
               {error}
             </div>
           ) : null}
@@ -215,62 +324,5 @@ function SignupPage() {
         </div>
       </aside>
     </main>
-  );
-}
-
-interface FieldProps {
-  name: string;
-  label: string;
-  type: "text" | "email" | "password";
-  required?: boolean;
-  minLength?: number;
-  autoComplete?: string;
-  hint?: string;
-}
-
-function Field({ name, label, type, required, minLength, autoComplete, hint }: FieldProps) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-sm font-medium text-neutral-800">{label}</span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        minLength={minLength}
-        autoComplete={autoComplete}
-        className="block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-      />
-      {hint ? <span className="text-xs text-neutral-500">{hint}</span> : null}
-    </label>
-  );
-}
-
-interface SelectFieldProps {
-  name: string;
-  label: string;
-  required?: boolean;
-  options: { code: string; label: string }[];
-}
-
-function SelectField({ name, label, required, options }: SelectFieldProps) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-sm font-medium text-neutral-800">{label}</span>
-      <select
-        name={name}
-        required={required}
-        defaultValue=""
-        className="block w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-      >
-        <option value="" disabled>
-          Select…
-        </option>
-        {options.map((option) => (
-          <option key={option.code} value={option.code}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }
