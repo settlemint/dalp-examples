@@ -20,18 +20,18 @@ const key = (name: string): string => name.toLowerCase().replaceAll(/[^a-z0-9]/g
 const dalp = clientFor("reporting");
 heading("Flow 1 — Bootstrap check", "reporting");
 
-const schemes: TopicSchemes = await dalp.directory.topicSchemes.list({ query: {} });
-const issuers: TrustedIssuers = await dalp.directory.trustedIssuers.list({ query: {} });
+const schemes: TopicSchemes = await dalp.system.claimTopics.list({ query: {} });
+const issuers: TrustedIssuers = await dalp.system.trustedIssuers.list({ query: {} });
 
 let ready = true;
 for (const topic of REQUIRED) {
   const scheme = schemes.data.find((row) => key(row.name) === key(topic));
   if (scheme === undefined) {
-    console.log(`  [--] topic scheme ${topic}: not registered on this platform`);
+    console.log(`  [--] claim topic ${topic}: not registered on this platform`);
     ready = false;
     continue;
   }
-  console.log(`  [ok] topic scheme ${topic}: topicId ${scheme.topicId}`);
+  console.log(`  [ok] claim topic ${topic}: topicId ${scheme.topicId}`);
 
   const issuer = issuers.data.find((row) =>
     row.claimTopics.some((claim) => claim.topicId === scheme.topicId),

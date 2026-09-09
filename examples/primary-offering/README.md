@@ -25,6 +25,17 @@ The flows run in order. Each one appends the ids it created to
 `src/lib/state.json`, which the next one reads, so nothing has to be pasted
 between terminals. Delete that file to start a fresh run.
 
+A run that dies partway leaves its idempotency keys spent. The platform
+records a key when it accepts the request, so the flow that re-runs after a
+dropped connection is answered from that record and does no work: flow 8 will
+say the round already settled. Start the next offering with a new symbol rather
+than trying to finish the old one.
+
+A second run needs new names. `user.create` is unique on email and answers 409
+for one it already knows, and an idempotency key does not change that, so pass a
+fresh address to flows 2 and 3. Flow 4 takes the symbol the same way, and a new
+symbol is a new instrument: `bun run flow:04 POCB`.
+
 ```bash
 bun run flow:01
 bun run flow:02
@@ -40,17 +51,17 @@ bun run flow:09
 
 ## The nine flows
 
-| Flow | Script                          | Service account                                            | What it does                                                                                                                                       |
-| ---- | ------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | `src/01-bootstrap-check.ts`     | `DALP_REPORTING_KEY`                                       | Confirms the KYC and AML topic schemes exist and a trusted issuer is registered for both. Exits non-zero if not.                                   |
-| 2    | `src/02-issuer-onboarding.ts`   | `DALP_OPERATOR_KEY`                                        | Creates the issuer user, wallet and identity, registers the identity, confirms the registration.                                                   |
-| 3    | `src/03-investor-onboarding.ts` | `DALP_OPERATOR_KEY`, then `DALP_KYC_KEY`                   | The same, plus the KYC and AML claims signed onto the identity by the claim issuer.                                                                |
-| 4    | `src/04-create-asset.ts`        | `DALP_ISSUER_KEY`                                          | Deploys the token paused with zero supply, grants settlement its roles, installs the identity-verification rule, sets the cap, records a document. |
-| 5    | `src/05-go-live-price.ts`       | `DALP_ISSUER_KEY`                                          | Stores the offering price and reads it back.                                                                                                       |
-| 6    | `src/06-order-eligibility.ts`   | `DALP_REPORTING_KEY`                                       | The registry pre-filter, then the authoritative transfer simulation. Needs DALP 3.2 for the second half.                                           |
-| 7    | `src/07-allocation-recheck.ts`  | `DALP_REPORTING_KEY`                                       | Re-simulates every approved allocation line immediately before settlement. Needs DALP 3.2.                                                         |
-| 8    | `src/08-settlement.ts`          | `DALP_SETTLEMENT_KEY`                                      | Unpauses, mints the allocation, reads the transaction record, and shows the replay returning the same transaction id.                              |
-| 9    | `src/09-after-settlement.ts`    | `DALP_REPORTING_KEY`, one write from `DALP_SETTLEMENT_KEY` | Reads the holder register now and at the mint block, then pauses the token again.                                                                  |
+| Flow | Script                          | Service account                                            | What it does                                                                                                                                                                 |
+| ---- | ------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `src/01-bootstrap-check.ts`     | `DALP_REPORTING_KEY`                                       | Confirms the KYC and AML topic schemes exist and a trusted issuer is registered for both. Exits non-zero if not.                                                             |
+| 2    | `src/02-issuer-onboarding.ts`   | `DALP_OPERATOR_KEY`                                        | Creates the issuer user, wallet and identity, registers the identity, confirms the registration.                                                                             |
+| 3    | `src/03-investor-onboarding.ts` | `DALP_OPERATOR_KEY`, then `DALP_KYC_KEY`                   | The same, plus the KYC and AML claims signed onto the identity by the claim issuer.                                                                                          |
+| 4    | `src/04-create-asset.ts`        | `DALP_ISSUER_KEY`                                          | Deploys the token paused with zero supply, grants settlement its roles, installs the identity-verification rule and the offering ceiling, asks for a document upload target. |
+| 5    | `src/05-go-live-price.ts`       | `DALP_ISSUER_KEY`                                          | Stores the offering price and reads it back.                                                                                                                                 |
+| 6    | `src/06-order-eligibility.ts`   | `DALP_REPORTING_KEY`                                       | The registry pre-filter, then the authoritative transfer simulation. Needs DALP 3.2 for the second half.                                                                     |
+| 7    | `src/07-allocation-recheck.ts`  | `DALP_REPORTING_KEY`                                       | Re-simulates every approved allocation line immediately before settlement. Needs DALP 3.2.                                                                                   |
+| 8    | `src/08-settlement.ts`          | `DALP_SETTLEMENT_KEY`                                      | Unpauses, mints the allocation, reads the transaction record, and shows the replay answering with that same mint instead of a second one.                                    |
+| 9    | `src/09-after-settlement.ts`    | `DALP_REPORTING_KEY`, one write from `DALP_SETTLEMENT_KEY` | Reads the holder register now and at the mint block, then pauses the token again.                                                                                            |
 
 ## What every script does the same way
 
@@ -67,10 +78,17 @@ party a call concerns is named in the body.
 `src/lib/wait.ts`, which waits for a terminal state and refuses anything that is
 not `COMPLETED`. Both the transaction id and the terminal state are printed.
 
+**Every write asks for the handle.** The SDK sends `Prefer: wait=99` on every
+mutation unless you say otherwise, which holds the request open until the chain
+settles and answers with the finished resource. `src/lib/client.ts` sends
+`Prefer: respond-async` instead, so a write answers with the 202 handle and the
+flow follows it. Both are correct; asking for the handle is what lets one
+settlement job submit many writes and follow them all.
+
 **Every write carries an idempotency key** derived from a stable local id, so
 re-running a flow does not double-write. Flow 8 makes this visible: it sends the
-same mint twice under one key and shows the second call returning the first
-transaction id.
+same mint twice under one key and the second call answers with the first mint's
+result, carrying the same transaction hash and the same total supply.
 
 **Amounts are base units.** A mint amount, a supply cap and a simulated transfer
 are integer decimal strings in the token's base units. `src/lib/units.ts` does
@@ -78,11 +96,13 @@ that conversion in one place.
 
 ## Two things this workspace does not do
 
-**The document bytes.** Flow 4 asks for a presigned upload target and records
-the document against the returned `objectKey`, both through the SDK. Putting the
-bytes on the presigned URL is a plain `PUT` to object storage, outside the
-platform API and with no SDK method, so this workspace does not make that call.
-Do it yourself between the two, then record the document with the same key.
+**The document bytes.** Flow 4 asks for a presigned upload target and stops
+there. Putting the bytes on the presigned URL is a plain `PUT` to object
+storage, outside the platform API and with no SDK method, so this workspace does
+not make that call. Do it from your own backend, then record the document with
+the same `objectKey`; the flow carries that call as a comment. Confirming before
+the bytes land answers `DALP-0326`, because the platform reads the object back
+before it records anything.
 
 **Detecting the platform line.** `transfer-simulate` arrived with DALP 3.2. The
 platform publishes no version route, and the client is a proxy that answers for
@@ -95,3 +115,39 @@ Setting `DALP_PLATFORM_LINE=3.2` also needs the `@settlemint/dalp-sdk` pin
 moved to the 3.2 line. This workspace pins `3.1.19`, whose contract carries no
 transfer-simulate procedure, so the client refuses that call locally before it
 reaches the platform.
+
+## What a sandbox taught these examples
+
+Every flow here ran against a live 3.1 sandbox, and five things about that
+platform are not obvious from the routes alone.
+
+**A new user is `PENDING`, not `NOT_REGISTERED`.** `user.create` already deploys
+the identity contract, so the status right after it is `PENDING`: the identity
+exists but the registry does not carry it. Registering is what writes the
+country and moves it to `ACTIVE`, and nothing counts until it is: a claim will
+not attach, and a mint to that wallet reverts with "Recipient not verified".
+Flows 2 and 3 therefore register unless the status is already `ACTIVE`.
+
+**A new instrument comes from a template.** The fixed legacy types (bond,
+equity, fund, stablecoin and the rest) are still served for tokens that already
+exist, but creating a new one needs `features.legacyAssetCreation`. A new token
+is `type: "dalp-asset"` plus a `templateId` from
+`settings.assetTypeTemplates.list`.
+
+**The offering ceiling is a compliance module.** `token.setCap` encodes
+`ISMARTCapped.setCap`, an interface baked into the contract at compile time. A
+template asset does not carry it and the platform answers `DALP-0025
+TOKEN_INTERFACE_NOT_SUPPORTED`. The ceiling that does apply is the `capped-v2`
+compliance module, installed in `initialModulePairs` at creation.
+
+**The KYC claim value is a hash, not a word.** A `knowYourCustomer` claim must
+carry the `contentHash` of the approved KYC version, which binds it on chain to
+the exact record a reviewer approved; issuing anything else answers `DALP-0271`.
+Every other investor topic is a boolean auto-claim and takes the literal
+`"true"`. That is why flow 3 drafts, submits and approves a KYC profile version
+before it issues either claim.
+
+**A counterfactual smart wallet cannot sign.** If the service account's smart
+wallet has never been deployed, every queued write dead-letters with "smart
+wallet is counterfactual but missing participant identity metadata". Set
+`DALP_EXECUTOR=eoa` and the account's own key signs instead.

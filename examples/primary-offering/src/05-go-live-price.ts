@@ -9,6 +9,7 @@
 import { clientFor, heading } from "./lib/client.ts";
 import type { TokenPrice } from "./lib/responses.ts";
 import { requireState } from "./lib/state.ts";
+import { displayUnits } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
 
 const PRICE = "100.00";
@@ -29,8 +30,10 @@ const stored: TokenPrice = await dalp.token.price({
   params: { tokenAddress: token.address },
   query: { currency: CURRENCY },
 });
+// The price comes back as an 18-decimal integer, whatever the token's own
+// decimals are, with the precision named alongside it.
 console.log(
-  `  stored price: ${stored.data.price} ${stored.data.currency} (source: ${stored.data.source})`,
+  `  stored price: ${displayUnits(stored.data.price, stored.data.decimals)} ${stored.data.currency} (source: ${stored.data.source})`,
 );
 
 console.log("\nThe offering is priced and open. Run flow:06 next.");

@@ -14,6 +14,7 @@
 import { clientFor, heading } from "./lib/client.ts";
 import type { HistoricalBalance, HolderBalance, UserAssets } from "./lib/responses.ts";
 import { requireState } from "./lib/state.ts";
+import { trimZeros } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
 
 const token = requireState("token", "flow:04");
@@ -27,7 +28,7 @@ console.log(`  the reporting account holds ${portfolio.data.length} asset row(s)
 
 console.log(`\n  holder register for ${token.address}`);
 console.log(
-  `  ${"investor".padEnd(34)}${"balance".padEnd(16)}${"frozen".padEnd(16)}at block ${mint.blockNumber ?? "?"}`,
+  `  ${"investor".padEnd(34)}${"balance".padEnd(12)}${"frozen".padEnd(12)}at block ${mint.blockNumber ?? "?"}`,
 );
 for (const investor of investors) {
   const current: HolderBalance = await dalp.token.holder({
@@ -40,7 +41,8 @@ for (const investor of investors) {
   });
   const holder = current.data.holder;
   console.log(
-    `  ${investor.email.padEnd(34)}${(holder?.value ?? "0").padEnd(16)}${(holder?.frozen ?? "0").padEnd(16)}${atMint.data.balance}`,
+    `  ${investor.email.padEnd(34)}${trimZeros(holder?.value ?? "0").padEnd(12)}` +
+      `${trimZeros(holder?.frozen ?? "0").padEnd(12)}${trimZeros(atMint.data.balance)}`,
   );
 }
 

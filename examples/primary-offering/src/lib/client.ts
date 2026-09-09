@@ -29,12 +29,42 @@ export function requireEnv(name: string): string {
   return value;
 }
 
-/** Build the client for one service account. */
+/** Read a variable that only some deployments need. */
+function optionalEnv(name: string): string | undefined {
+  const value = process.env[name];
+  return value === undefined || value === "" ? undefined : value;
+}
+
+/**
+ * Build the client for one service account.
+ *
+ * `organizationId` is only sent when the environment names one. A key that
+ * belongs to a single organization already carries that context; an account
+ * with access to more than one has to say which.
+ *
+ * `DALP_EXECUTOR` picks which wallet signs the chain writes. Leave it unset and
+ * the platform chooses. Set it to `eoa` when the account's smart wallet has not
+ * been deployed yet: the queue cannot route a user operation through a
+ * counterfactual wallet and every write dead-letters with "counterfactual but
+ * missing participant identity metadata".
+ *
+ * `Prefer: respond-async` is what makes a write answer with the 202 handle
+ * these examples follow. The SDK sends `Prefer: wait=99` on every mutation
+ * unless you say otherwise, which holds the request open until the chain
+ * settles and returns the finished resource instead of a transaction id. Both
+ * are correct; asking for the handle is what lets one settlement job submit
+ * many writes and follow them all.
+ */
 export function clientFor(account: ServiceAccount): DalpClient {
+  const executor = optionalEnv("DALP_EXECUTOR");
   return createDalpClient({
     url: requireEnv("DALP_URL"),
     apiKey: requireEnv(KEY_VARIABLE[account]),
-    organizationId: requireEnv("DALP_ORG_ID"),
+    organizationId: optionalEnv("DALP_ORG_ID"),
+    headers: {
+      Prefer: "respond-async",
+      ...(executor === undefined ? {} : { "X-Executor": executor }),
+    },
   });
 }
 

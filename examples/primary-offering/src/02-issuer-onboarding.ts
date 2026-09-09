@@ -2,9 +2,12 @@
  * Flow 2 — Issuer onboarding (svc-operator).
  *
  * The issuer needs a platform user, a wallet and a registered identity before
- * it can list anything. Three calls do all of it: one creates the account,
- * membership, wallet and identity together; one registers that identity in the
- * system's registry under its country; one confirms the registration landed.
+ * it can list anything. `user.create` does most of it in one call: account,
+ * membership, wallet, identity, and a pending entry in the system's identity
+ * registry. The registration route is for the other case, a wallet that arrived
+ * from outside the platform and whose identity the registry has never seen; it
+ * reverts on chain for a wallet the platform just registered. So the status is
+ * read first, and the registration is made only when the registry has no entry.
  *
  * Run: bun run flow:02 [email]
  */
@@ -29,16 +32,21 @@ console.log(`  user     ${created.data.id}`);
 console.log(`  wallet   ${created.data.wallet}`);
 console.log(`  identity ${created.data.identity}`);
 
-const registration = await dalp.system.identity.register(
-  { body: { wallet: created.data.wallet, country: COUNTRY } },
-  { context: { idempotencyKey: `pof-register-${email}` } },
-);
-await settle(dalp, registration, "identity registration");
-
-const status: RegistrationStatus = await dalp.system.identity.registrationStatus({
+const registered: RegistrationStatus = await dalp.system.identity.registrationStatus({
   query: { wallet: created.data.wallet },
 });
-console.log(`  registration status: ${status.data.status}`);
+console.log(`  registration: ${registered.data.status}`);
+// `user.create` already deploys the identity contract and queues it for the
+// registry, so the status here is PENDING, not NOT_REGISTERED. Registering is
+// what writes the country into the registry and moves it to ACTIVE; nothing
+// downstream — no claim, no transfer, no mint — counts until it is ACTIVE.
+if (registered.data.status !== "ACTIVE") {
+  const registration = await dalp.system.identity.register(
+    { body: { wallet: created.data.wallet, country: COUNTRY } },
+    { context: { idempotencyKey: `pof-register-${email}` } },
+  );
+  await settle(dalp, registration, "identity registration");
+}
 
 writeState({
   issuer: {

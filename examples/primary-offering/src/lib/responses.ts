@@ -24,6 +24,19 @@ export interface RegistrationStatus {
   readonly data: { readonly status: string };
 }
 
+/** POST /kyc-profiles/{userId}/versions, and the submit and approve routes. */
+export interface KycVersion {
+  readonly data: { readonly id: string; readonly versionNumber: number; readonly status: string };
+}
+
+/** GET /kyc-profiles/{userId} */
+export interface KycProfile {
+  readonly data: {
+    readonly status: string;
+    readonly approvedVersion: { readonly contentHash: string | null } | null;
+  };
+}
+
 /** GET /system/identities/{identityAddress}/claim-events */
 export interface ClaimEvents {
   readonly data: readonly {
@@ -33,17 +46,27 @@ export interface ClaimEvents {
   }[];
 }
 
-/** GET /directory/topic-schemes */
+/** GET /system/claim-topics — the topics registered on this organization's system. */
 export interface TopicSchemes {
   readonly data: readonly { readonly topicId: string; readonly name: string }[];
 }
 
-/** GET /directory/trusted-issuers */
+/** GET /system/trusted-issuers — the issuers this system trusts, and for which topics. */
 export interface TrustedIssuers {
   readonly data: readonly {
     readonly id: string;
     readonly claimTopics: readonly { readonly topicId: string; readonly name: string }[];
   }[];
+}
+
+/** GET /settings/asset-type-templates — the instrument templates on this platform. */
+export interface AssetTypeTemplates {
+  readonly data: readonly { readonly id: string; readonly name: string; readonly typeId: string }[];
+}
+
+/** POST /tokens, when the platform answers inline instead of queueing. */
+export interface CreatedToken {
+  readonly data?: { readonly id: string };
 }
 
 /** GET /system/compliance-modules — the deployed module contracts. */
@@ -60,7 +83,9 @@ export interface TokenComplianceModules {
   readonly data: {
     readonly complianceModuleConfigs: readonly {
       readonly complianceModule: { readonly typeId: string };
-      readonly isActive: boolean;
+      /** Only the v2 modules report an instance and its state. */
+      readonly isActive?: boolean;
+      readonly isGlobal: boolean;
     }[];
   };
 }
@@ -83,7 +108,22 @@ export interface UploadTarget {
 
 /** GET /tokens/{tokenAddress}/price */
 export interface TokenPrice {
-  readonly data: { readonly price: string; readonly currency: string; readonly source: string };
+  readonly data: {
+    readonly price: string;
+    readonly decimals: number;
+    readonly currency: string;
+    readonly source: string;
+  };
+}
+
+/**
+ * POST /tokens/{tokenAddress}/mints, replayed under the key of a mint that
+ * already settled: the platform answers with that mint's finished result rather
+ * than a new handle, and `meta.txHashes` names the transaction it belongs to.
+ */
+export interface MintResult {
+  readonly data: { readonly totalSupply: string };
+  readonly meta: { readonly txHashes: readonly string[] };
 }
 
 /** GET /tokens/{tokenAddress}/recipient-eligibility — registry membership, not a transfer verdict. */

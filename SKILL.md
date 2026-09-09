@@ -532,14 +532,14 @@ offering, each calling this SDK against a live sandbox and printing every
 transaction id with its terminal state. Read `examples/primary-offering/README.md`
 for the service-account keys and the order to run them in.
 
-- [`src/01-bootstrap-check.ts`](examples/primary-offering/src/01-bootstrap-check.ts) — `directory.topicSchemes.list` and `directory.trustedIssuers.list`: are the KYC and AML topics registered, and is there a trusted issuer for both
-- [`src/02-issuer-onboarding.ts`](examples/primary-offering/src/02-issuer-onboarding.ts) — `user.create`, `system.identity.register`, `system.identity.registrationStatus`: the issuer's user, wallet and registered identity
-- [`src/03-investor-onboarding.ts`](examples/primary-offering/src/03-investor-onboarding.ts) — the same, plus `system.identity.claim.issue` and `system.identity.claim.history`: the KYC and AML verdicts signed onto the identity
-- [`src/04-create-asset.ts`](examples/primary-offering/src/04-create-asset.ts) — `token.create` paused with zero supply, `token.setCap`, `token.documents.getUploadUrl`, `token.documents.confirmUpload`, `token.compliance`
+- [`src/01-bootstrap-check.ts`](examples/primary-offering/src/01-bootstrap-check.ts) — `system.claimTopics.list` and `system.trustedIssuers.list`: are the KYC and AML topics registered, and is there a trusted issuer for both
+- [`src/02-issuer-onboarding.ts`](examples/primary-offering/src/02-issuer-onboarding.ts) — `user.create`, `system.identity.registrationStatus`, `system.identity.register`: the issuer's user, wallet and identity, registered out of `PENDING` into `ACTIVE`
+- [`src/03-investor-onboarding.ts`](examples/primary-offering/src/03-investor-onboarding.ts) — the same, plus the KYC profile version drafted, submitted and approved, then `system.identity.claim.issue` and `system.identity.claim.history`: the KYC and AML verdicts signed onto the identity
+- [`src/04-create-asset.ts`](examples/primary-offering/src/04-create-asset.ts) — `settings.assetTypeTemplates.list`, `token.create` from a template paused with zero supply and carrying the identity-verification and `capped-v2` module pairs, `token.documents.getUploadUrl`, `token.compliance`
 - [`src/05-go-live-price.ts`](examples/primary-offering/src/05-go-live-price.ts) — `token.setPrice` and `token.price`: the price every order is quoted against
 - [`src/06-order-eligibility.ts`](examples/primary-offering/src/06-order-eligibility.ts) — `token.recipientEligibility` as the registry pre-filter, `token.transferSimulate` (3.2) as the authoritative verdict
 - [`src/07-allocation-recheck.ts`](examples/primary-offering/src/07-allocation-recheck.ts) — `token.transferSimulate` (3.2) once per approved allocation line, immediately before settlement
-- [`src/08-settlement.ts`](examples/primary-offering/src/08-settlement.ts) — `token.unpause`, `token.mint`, `transaction.status`, and the same mint replayed under one idempotency key
+- [`src/08-settlement.ts`](examples/primary-offering/src/08-settlement.ts) — `token.unpause`, `token.mint`, `transaction.status`, and the same mint replayed under one idempotency key, which answers with the first mint's result
 - [`src/09-after-settlement.ts`](examples/primary-offering/src/09-after-settlement.ts) — `user.assets`, `token.holder`, `token.historicalBalanceAtBlockByHolder` at the mint block, then `token.pause`
 
 ---

@@ -6,6 +6,7 @@
     "DALP_ORG_ID",
     "DALP_URL",
     "DALP_PLATFORM_LINE",
+    "DALP_EXECUTOR",
     "DALP_OPERATOR_KEY",
     "DALP_ISSUER_KEY",
     "DALP_KYC_KEY",

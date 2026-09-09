@@ -7,12 +7,12 @@
  * moment: a recipient without the KYC and AML claims makes the mint revert.
  *
  * The same call is then made a second time with the same idempotency key. It
- * returns the first transaction id and mints nothing further, which is what
+ * answers with the first mint's result and mints nothing further, which is what
  * makes a settlement job safe to re-run after a timeout.
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type { TransactionStatus } from "./lib/responses.ts";
+import type { MintResult, TransactionStatus } from "./lib/responses.ts";
 import { requireState, writeState } from "./lib/state.ts";
 import { baseUnits } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
@@ -42,7 +42,10 @@ const mintKey = `pof-mint-${token.address}-round-1`;
 const minted = await dalp.token.mint(mintRequest, { context: { idempotencyKey: mintKey } });
 const mintTransaction = await settle(dalp, minted, "mint");
 if (mintTransaction === undefined) {
-  throw new Error("The mint answered inline; this example expects the queued path.");
+  throw new Error(
+    `This round already settled under ${mintKey}, so the platform answered with its ` +
+      "stored result instead of a new handle. Create another offering with flow:04 to settle again.",
+  );
 }
 
 const record: TransactionStatus = await dalp.transaction.status({
@@ -53,13 +56,19 @@ console.log(`    status ${record.data.status}`);
 console.log(`    block  ${record.data.blockNumber ?? "none"}`);
 console.log(`    hash   ${record.data.transactionHash ?? "none"}`);
 
-const replayed = await dalp.token.mint(mintRequest, { context: { idempotencyKey: mintKey } });
-const replayedTransaction = await settle(dalp, replayed, "mint replayed with the same key");
+// The replay does not queue a second mint and it does not hand back a second
+// handle either: the key already has a settled result, so the platform answers
+// with that result, carrying the hash of the transaction that produced it.
+const replayed: MintResult = await dalp.token.mint(mintRequest, {
+  context: { idempotencyKey: mintKey },
+});
+const replayedHash = replayed.meta.txHashes[0];
 console.log(
-  replayedTransaction === mintTransaction
-    ? "  the replay returned the first transaction id; no second mint happened"
-    : `  the replay returned ${String(replayedTransaction)}, not the first transaction id`,
+  replayedHash === record.data.transactionHash
+    ? "  the replay answered with the first mint's transaction hash; nothing minted twice"
+    : `  the replay answered with ${String(replayedHash)}, not the first mint's hash`,
 );
+console.log(`  total supply ${replayed.data.totalSupply}`);
 
 writeState({ mint: { transactionId: mintTransaction, blockNumber: record.data.blockNumber } });
 console.log("\nSupply is issued and the investors hold it. Run flow:09 next.");

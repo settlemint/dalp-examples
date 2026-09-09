@@ -12,6 +12,15 @@
 import { waitForTransaction } from "@settlemint/dalp-sdk";
 import type { DalpClient } from "@settlemint/dalp-sdk";
 
+/**
+ * How long to follow one transaction.
+ *
+ * The SDK waits two minutes by default. A token deployment is a workflow, not
+ * one chain write: it submits the contract, the compliance modules and the
+ * price feed in sequence, and on a busy sandbox that runs past two minutes.
+ */
+const WAIT_MS = 600_000;
+
 /** The async-accepted envelope a queued mutation returns. */
 interface AsyncAccepted {
   readonly transactionId: string;
@@ -43,7 +52,7 @@ export async function settle(
     console.log(`  ${label}: answered inline, no transaction handle`);
     return undefined;
   }
-  const status = await waitForTransaction(dalp, handle.transactionId);
+  const status = await waitForTransaction(dalp, handle.transactionId, { timeoutMs: WAIT_MS });
   console.log(`  ${label}: ${handle.transactionId} -> ${status.status}`);
   if (status.status !== "COMPLETED") {
     throw new Error(
