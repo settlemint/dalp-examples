@@ -4,7 +4,8 @@
   "private": true,
   "description": "Forkable DALP reference apps + LLM-consumable SDK Skill",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "examples/*"
   ],
   "scripts": {
     "dev": "turbo run dev",

@@ -11,6 +11,9 @@ dist
 .env.*.local
 !.env.example
 
+# ids one example flow writes for the next one to read
+examples/primary-offering/src/lib/state.json
+
 .DS_Store
 *.log
 

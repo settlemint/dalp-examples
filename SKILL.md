@@ -27,8 +27,9 @@ This file is the LLM-consumable spec. Paste it into Claude, Cursor, or any agent
 8. [Cross-cutting: Webhook verification](#cross-cutting-webhook-verification)
 9. [Cross-cutting: Serializers (bigint, decimal, timestamp)](#cross-cutting-serializers)
 10. [Domain references](#domain-references)
-11. [What's NOT in the SDK](#whats-not-in-the-sdk)
-12. [Conventions used in this file](#conventions-used-in-this-file)
+11. [Runnable examples](#runnable-examples)
+12. [What's NOT in the SDK](#whats-not-in-the-sdk)
+13. [Conventions used in this file](#conventions-used-in-this-file)
 
 ---
 
@@ -521,6 +522,25 @@ Heavier per-domain detail lives in `references/`. Each file follows the same sha
 - [`references/v2-advanced.md`](references/v2-advanced.md) — `monitoring.api`/`.blockchain`, `compliance`, `organization`, `participants`, `directory`, `smartWallets`, `contracts`, `historicalBalances`
 
 > Open the relevant reference file the moment you need a method's exact input schema or output shape. Don't guess.
+
+---
+
+## Runnable examples
+
+`examples/primary-offering/` is one headless script per flow of a primary
+offering, each calling this SDK against a live sandbox and printing every
+transaction id with its terminal state. Read `examples/primary-offering/README.md`
+for the service-account keys and the order to run them in.
+
+- [`src/01-bootstrap-check.ts`](examples/primary-offering/src/01-bootstrap-check.ts) — `directory.topicSchemes.list` and `directory.trustedIssuers.list`: are the KYC and AML topics registered, and is there a trusted issuer for both
+- [`src/02-issuer-onboarding.ts`](examples/primary-offering/src/02-issuer-onboarding.ts) — `user.create`, `system.identity.register`, `system.identity.registrationStatus`: the issuer's user, wallet and registered identity
+- [`src/03-investor-onboarding.ts`](examples/primary-offering/src/03-investor-onboarding.ts) — the same, plus `system.identity.claim.issue` and `system.identity.claim.history`: the KYC and AML verdicts signed onto the identity
+- [`src/04-create-asset.ts`](examples/primary-offering/src/04-create-asset.ts) — `token.create` paused with zero supply, `token.setCap`, `token.documents.getUploadUrl`, `token.documents.confirmUpload`, `token.compliance`
+- [`src/05-go-live-price.ts`](examples/primary-offering/src/05-go-live-price.ts) — `token.setPrice` and `token.price`: the price every order is quoted against
+- [`src/06-order-eligibility.ts`](examples/primary-offering/src/06-order-eligibility.ts) — `token.recipientEligibility` as the registry pre-filter, `token.transferSimulate` (3.2) as the authoritative verdict
+- [`src/07-allocation-recheck.ts`](examples/primary-offering/src/07-allocation-recheck.ts) — `token.transferSimulate` (3.2) once per approved allocation line, immediately before settlement
+- [`src/08-settlement.ts`](examples/primary-offering/src/08-settlement.ts) — `token.unpause`, `token.mint`, `transaction.status`, and the same mint replayed under one idempotency key
+- [`src/09-after-settlement.ts`](examples/primary-offering/src/09-after-settlement.ts) — `user.assets`, `token.holder`, `token.historicalBalanceAtBlockByHolder` at the mint block, then `token.pause`
 
 ---
 
