@@ -25,11 +25,13 @@ The flows run in order. Each one appends the ids it created to
 `src/lib/state.json`, which the next one reads, so nothing has to be pasted
 between terminals. Delete that file to start a fresh run.
 
-A run that dies partway leaves its idempotency keys spent. The platform
-records a key when it accepts the request, so the flow that re-runs after a
-dropped connection is answered from that record and does no work: flow 8 will
-say the round already settled. Start the next offering with a new symbol rather
-than trying to finish the old one.
+A run that dies partway leaves its idempotency keys spent. The platform records
+a key when it accepts the request, so a flow re-run after a dropped connection is
+answered from that record and does no work: the replay reports success while the
+write it stands for never reached the chain. Flow 8 then says the round already
+settled, or the mint refuses because the unpause it replayed never happened.
+Start the next offering with a new symbol rather than trying to finish the old
+one.
 
 A second run needs new names. `user.create` is unique on email and answers 409
 for one it already knows, and an idempotency key does not change that, so pass a
