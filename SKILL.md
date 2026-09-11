@@ -529,18 +529,20 @@ Heavier per-domain detail lives in `references/`. Each file follows the same sha
 
 `examples/primary-offering/` is one headless script per flow of a primary
 offering, each calling this SDK against a live sandbox and printing every
-transaction id with its terminal state. Read `examples/primary-offering/README.md`
-for the service-account keys and the order to run them in.
+transaction id with its terminal state. No flow keeps local state: each one reads
+back what the platform already holds and writes only what is missing, so any of
+them can be run again. Read `examples/primary-offering/README.md` for the
+service-account keys and the order to run them in.
 
 - [`src/01-bootstrap-check.ts`](examples/primary-offering/src/01-bootstrap-check.ts) — `system.claimTopics.list` and `system.trustedIssuers.list`: are the KYC and AML topics registered, and is there a trusted issuer for both
-- [`src/02-issuer-onboarding.ts`](examples/primary-offering/src/02-issuer-onboarding.ts) — `user.create`, `system.identity.registrationStatus`, `system.identity.register`: the issuer's user, wallet and identity, registered out of `PENDING` into `ACTIVE`
-- [`src/03-investor-onboarding.ts`](examples/primary-offering/src/03-investor-onboarding.ts) — the same, plus the KYC profile version drafted, submitted and approved, then `system.identity.claim.issue` and `system.identity.claim.history`: the KYC and AML verdicts signed onto the identity
-- [`src/04-create-asset.ts`](examples/primary-offering/src/04-create-asset.ts) — `settings.assetTypeTemplates.list`, `token.create` from a template paused with zero supply and carrying the identity-verification and `capped-v2` module pairs, `token.documents.getUploadUrl`, `token.compliance`
-- [`src/05-go-live-price.ts`](examples/primary-offering/src/05-go-live-price.ts) — `token.setPrice` and `token.price`: the price every order is quoted against
+- [`src/02-issuer-onboarding.ts`](examples/primary-offering/src/02-issuer-onboarding.ts) — `user.list` to see whether the issuer exists, then `user.create`, `system.identity.registrationStatus` and `system.identity.register`: the issuer's user, wallet and identity, registered out of `PENDING` into `ACTIVE`
+- [`src/03-investor-onboarding.ts`](examples/primary-offering/src/03-investor-onboarding.ts) — the same per investor, plus `user.kyc.versions.list` before drafting, submitting and approving a version, and `system.identity.claim.history` before `system.identity.claim.issue`: the KYC and AML verdicts signed onto the identity, each written only once
+- [`src/04-create-asset.ts`](examples/primary-offering/src/04-create-asset.ts) — `token.list` by symbol, then `settings.assetTypeTemplates.list` and `token.create` from a template paused with zero supply and carrying the identity-verification and `capped-v2` module pairs, `token.documents.getUploadUrl`, `token.compliance`
+- [`src/05-go-live-price.ts`](examples/primary-offering/src/05-go-live-price.ts) — the base price on the `token.list` row, then `token.setPrice` and `token.price`: the price every order is quoted against
 - [`src/06-order-eligibility.ts`](examples/primary-offering/src/06-order-eligibility.ts) — `token.recipientEligibility` as the registry pre-filter; `token.transferSimulate`, the authoritative verdict, needs 3.2 and is carried as a comment
 - [`src/07-allocation-recheck.ts`](examples/primary-offering/src/07-allocation-recheck.ts) — `token.recipientEligibility` once per approved allocation line immediately before settlement, with the 3.2 `token.transferSimulate` re-check carried as a comment
-- [`src/08-settlement.ts`](examples/primary-offering/src/08-settlement.ts) — `token.unpause`, `token.mint`, `transaction.status`, and the same mint replayed under one idempotency key, which answers with the first mint's result
-- [`src/09-after-settlement.ts`](examples/primary-offering/src/09-after-settlement.ts) — `user.assets`, `token.holder`, `token.historicalBalanceAtBlockByHolder` at the mint block, then `token.pause`
+- [`src/08-settlement.ts`](examples/primary-offering/src/08-settlement.ts) — `token.holders` to see what is still owed, then `token.unpause`, `token.mint` for the short lines only, and `transaction.status`
+- [`src/09-after-settlement.ts`](examples/primary-offering/src/09-after-settlement.ts) — `user.assets`, `token.events` filtered to `MintCompleted` for the settlement block, `token.holder`, `token.historicalBalanceAtBlockByHolder` at that block, then `token.pause`
 
 ---
 

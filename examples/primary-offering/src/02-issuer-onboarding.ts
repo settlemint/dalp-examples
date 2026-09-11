@@ -4,55 +4,52 @@
  * The issuer needs a platform user, a wallet and a registered identity before
  * it can list anything. `user.create` does most of it in one call: account,
  * membership, wallet, identity, and a pending entry in the system's identity
- * registry. The registration route is for the other case, a wallet that arrived
- * from outside the platform and whose identity the registry has never seen; it
- * reverts on chain for a wallet the platform just registered. So the status is
- * read first, and the registration is made only when the registry has no entry.
+ * registry.
  *
- * Run: bun run flow:02 [email]
+ * Both writes are guarded by a read, so the flow can be run again on an issuer
+ * that is already half onboarded. `user.create` is unique on email and answers
+ * 409 for an address it knows, so the user is looked up first; and the registry
+ * entry is read before it is written, because registering a wallet the registry
+ * already carries reverts on chain.
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import { writeState } from "./lib/state.ts";
+import { findParty, identityOf } from "./lib/find.ts";
+import { COUNTRY, ISSUER_EMAIL } from "./lib/offering.ts";
 import { settle } from "./lib/wait.ts";
 
-/** ISO 3166-1 alpha-2, the jurisdiction the identity is registered under. */
-const COUNTRY = "AE";
-
-const email = process.argv[2] ?? "issuer@primary-offering.example";
 const dalp = clientFor("operator");
 heading("Flow 2 — Issuer onboarding", "operator");
 
-const created = await dalp.user.create(
-  { body: { email, name: "Primary Offering Issuer" } },
-  { context: { idempotencyKey: `pof-user-${email}` } },
-);
-console.log(`  user     ${created.data.id}`);
-console.log(`  wallet   ${created.data.wallet}`);
-console.log(`  identity ${created.data.identity}`);
+const existing = await findParty(dalp, ISSUER_EMAIL);
+let wallet = existing?.wallet;
+if (existing === undefined) {
+  const created = await dalp.user.create(
+    { body: { email: ISSUER_EMAIL, name: "Primary Offering Issuer" } },
+    { context: { idempotencyKey: `pof-user-${ISSUER_EMAIL}` } },
+  );
+  wallet = created.data.wallet;
+  console.log(`  user     ${created.data.id} (created)`);
+} else {
+  console.log(`  user     ${existing.userId} (already on file)`);
+}
+if (wallet === undefined) {
+  throw new Error("The issuer has no wallet.");
+}
+console.log(`  wallet   ${wallet}`);
 
-const registered = await dalp.system.identity.registrationStatus({
-  query: { wallet: created.data.wallet },
-});
-console.log(`  registration: ${registered.data.status}`);
 // `user.create` already deploys the identity contract and queues it for the
 // registry, so the status here is PENDING, not NOT_REGISTERED. Registering is
 // what writes the country into the registry and moves it to ACTIVE; nothing
 // downstream — no claim, no transfer, no mint — counts until it is ACTIVE.
-if (registered.data.status !== "ACTIVE") {
+const identity = await identityOf(dalp, wallet);
+console.log(`  identity ${identity.address} (${identity.status})`);
+if (identity.status !== "ACTIVE") {
   const registration = await dalp.system.identity.register(
-    { body: { wallet: created.data.wallet, country: COUNTRY } },
-    { context: { idempotencyKey: `pof-register-${email}` } },
+    { body: { wallet, country: COUNTRY } },
+    { context: { idempotencyKey: `pof-register-${ISSUER_EMAIL}` } },
   );
   await settle(dalp, registration, "identity registration");
 }
 
-writeState({
-  issuer: {
-    email,
-    userId: created.data.id,
-    wallet: created.data.wallet,
-    identity: created.data.identity,
-  },
-});
 console.log("\nIssuer onboarded. Run flow:03 next.");

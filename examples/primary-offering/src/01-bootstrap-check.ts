@@ -9,12 +9,8 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-
-/** The two topics the offering's compliance rule will require. */
-const REQUIRED = ["knowYourCustomer", "antiMoneyLaundering"];
-
-/** Registries name a topic either "knowYourCustomer" or "Know Your Customer". */
-const key = (name: string): string => name.toLowerCase().replaceAll(/[^a-z0-9]/gu, "");
+import { topicKey } from "./lib/find.ts";
+import { REQUIRED_TOPICS } from "./lib/offering.ts";
 
 const dalp = clientFor("reporting");
 heading("Flow 1 — Bootstrap check", "reporting");
@@ -23,8 +19,8 @@ const schemes = await dalp.system.claimTopics.list({ query: {} });
 const issuers = await dalp.system.trustedIssuers.list({ query: {} });
 
 let ready = true;
-for (const topic of REQUIRED) {
-  const scheme = schemes.data.find((row) => key(row.name) === key(topic));
+for (const topic of REQUIRED_TOPICS) {
+  const scheme = schemes.data.find((row) => topicKey(row.name) === topicKey(topic));
   if (scheme === undefined) {
     console.log(`  [--] claim topic ${topic}: not registered on this platform`);
     ready = false;

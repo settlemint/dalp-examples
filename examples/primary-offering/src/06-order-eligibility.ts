@@ -17,24 +17,23 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import { requireState } from "./lib/state.ts";
+import { requireInstrument, requireParty } from "./lib/find.ts";
+import { ALLOCATED_UNITS, INVESTOR_EMAILS, SYMBOL } from "./lib/offering.ts";
 
-/** What the investor asked for, in whole display units. */
-const ORDER_SIZE = "1000";
-
-const token = requireState("token", "flow:04");
-const investors = requireState("investors", "flow:03");
 const dalp = clientFor("reporting");
 heading("Flow 6 — Order-time eligibility", "reporting");
-console.log(`  token ${token.address}, order size ${ORDER_SIZE} units`);
 
-for (const investor of investors) {
+const token = await requireInstrument(dalp, SYMBOL, "flow:04");
+console.log(`  token ${token.address}, order size ${ALLOCATED_UNITS} units`);
+
+for (const email of INVESTOR_EMAILS) {
+  const investor = await requireParty(dalp, email, "flow:03");
   const eligibility = await dalp.token.recipientEligibility({
     params: { tokenAddress: token.address },
     query: { address: investor.wallet, action: "mint" },
   });
   const verdict = eligibility.data.eligible ? "in the registry" : "not in the registry";
-  console.log(`  ${investor.email.padEnd(40)}${verdict}`);
+  console.log(`  ${email.padEnd(40)}${verdict}`);
 }
 
 // On a 3.2 platform, with the @settlemint/dalp-sdk pin moved to the 3.2 line,
@@ -46,7 +45,7 @@ for (const investor of investors) {
 //     query: {
 //       from: "0x0000000000000000000000000000000000000000",
 //       to: investor.wallet,
-//       amount: baseUnits(ORDER_SIZE, token.decimals),
+//       amount: baseUnits(ALLOCATED_UNITS, token.decimals),
 //     },
 //   });
 //   console.log(simulation.data.verdict); // will-clear or will-revert

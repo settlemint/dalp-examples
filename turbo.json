@@ -10,7 +10,10 @@
     "DALP_ISSUER_KEY",
     "DALP_KYC_KEY",
     "DALP_SETTLEMENT_KEY",
-    "DALP_REPORTING_KEY"
+    "DALP_REPORTING_KEY",
+    "POF_SYMBOL",
+    "POF_ISSUER",
+    "POF_INVESTORS"
   ],
   "tasks": {
     "dev": {

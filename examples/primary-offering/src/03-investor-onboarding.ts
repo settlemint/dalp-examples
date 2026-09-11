@@ -1,7 +1,8 @@
 /**
  * Flow 3 — Investor onboarding (svc-operator, then svc-kyc).
  *
- * Flow 2 again, registry entry and all, plus the two steps that matter.
+ * Flow 2 again, registry entry and all, plus the two steps that matter, for
+ * every investor in the offering.
  *
  * First the KYC profile: the platform keeps a reviewed record per user, and a
  * claim on a topic that requires one is refused until that record is approved.
@@ -13,118 +14,119 @@
  * on chain and can receive an allocation. The case file stays on your side;
  * only the verdict reaches the chain.
  *
- * Run it twice with different emails so flow 8 has two recipients:
- *   bun run flow:03 alice@primary-offering.example
- *   bun run flow:03 bob@primary-offering.example
+ * Every step is guarded by a read of what the platform already holds, so a
+ * second run onboards only what the first one did not finish.
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import { readState, writeState } from "./lib/state.ts";
-import type { Party } from "./lib/state.ts";
+import { claimedTopicIds, findParty, identityOf, topicIdFor } from "./lib/find.ts";
+import { COUNTRY, INVESTOR_EMAILS, REQUIRED_TOPICS } from "./lib/offering.ts";
 import { settle } from "./lib/wait.ts";
 
-const COUNTRY = "AE";
-
-const email = process.argv[2] ?? "investor@primary-offering.example";
 const operator = clientFor("operator");
 const kyc = clientFor("kyc");
 heading("Flow 3 — Investor onboarding", "operator");
 
-const created = await operator.user.create(
-  { body: { email, name: "Primary Offering Investor" } },
-  { context: { idempotencyKey: `pof-user-${email}` } },
-);
-console.log(`  user     ${created.data.id}`);
-console.log(`  wallet   ${created.data.wallet}`);
-console.log(`  identity ${created.data.identity}`);
-
-const registered = await operator.system.identity.registrationStatus({
-  query: { wallet: created.data.wallet },
-});
-console.log(`  registration: ${registered.data.status}`);
-// `user.create` already deploys the identity contract and queues it for the
-// registry, so the status here is PENDING, not NOT_REGISTERED. Registering is
-// what writes the country into the registry and moves it to ACTIVE; nothing
-// downstream — no claim, no transfer, no mint — counts until it is ACTIVE.
-if (registered.data.status !== "ACTIVE") {
-  const registration = await operator.system.identity.register(
-    { body: { wallet: created.data.wallet, country: COUNTRY } },
-    { context: { idempotencyKey: `pof-register-${email}` } },
-  );
-  await settle(operator, registration, "identity registration");
+const topicIds = new Map<string, string>();
+for (const topic of REQUIRED_TOPICS) {
+  topicIds.set(topic, await topicIdFor(operator, topic));
 }
 
-// An approved version is unique on national id and country within the
-// organization, so the identifier is derived from the investor's own address.
-const draft = await kyc.user.kyc.versions.create({
-  params: { userId: created.data.id },
-  body: {
-    overwriteDraft: true,
-    initialData: {
-      firstName: "Primary",
-      lastName: "Investor",
-      dob: "1988-04-12T00:00:00.000Z",
-      country: COUNTRY,
-      residencyStatus: "resident",
-      nationalId: `POF-${email}`,
-    },
-  },
-});
-await kyc.user.kyc.version.submit({ params: { versionId: draft.data.id } });
-const reviewed = await kyc.user.kyc.version.approve({
-  params: { versionId: draft.data.id },
-  body: {},
-});
-console.log(`  kyc profile version ${draft.data.versionNumber}: ${reviewed.data.status}`);
+for (const email of INVESTOR_EMAILS) {
+  console.log(`\n  ${email}`);
 
-// The claim values are not free text. `knowYourCustomer` carries the content
-// hash of the approved version, which binds the claim on chain to the exact
-// record the reviewer approved; every other investor topic is a boolean
-// auto-claim and takes the literal "true".
-const profile = await kyc.user.kyc.profile.read({
-  params: { userId: created.data.id },
-});
-const contentHash = profile.data.approvedVersion?.contentHash;
-if (contentHash === null || contentHash === undefined) {
-  throw new Error("The approved KYC version carries no content hash.");
-}
+  const existing = await findParty(operator, email);
+  let wallet = existing?.wallet;
+  let userId = existing?.userId;
+  if (existing === undefined) {
+    const created = await operator.user.create(
+      { body: { email, name: "Primary Offering Investor" } },
+      { context: { idempotencyKey: `pof-user-${email}` } },
+    );
+    wallet = created.data.wallet;
+    userId = created.data.id;
+    console.log(`    user     ${userId} (created)`);
+  } else {
+    console.log(`    user     ${userId} (already on file)`);
+  }
+  if (wallet === undefined || userId === undefined) {
+    throw new Error(`${email} has no wallet.`);
+  }
 
-/** The two verdicts the token's compliance rule will require at mint time. */
-const verdicts = [
-  { topic: "knowYourCustomer", claim: contentHash },
-  { topic: "antiMoneyLaundering", claim: "true" },
-] as const;
+  // `user.create` already deploys the identity contract and queues it for the
+  // registry, so the status here is PENDING, not NOT_REGISTERED. Registering is
+  // what writes the country into the registry and moves it to ACTIVE; nothing
+  // downstream — no claim, no transfer, no mint — counts until it is ACTIVE.
+  const identity = await identityOf(operator, wallet);
+  console.log(`    identity ${identity.address} (${identity.status})`);
+  if (identity.status !== "ACTIVE") {
+    const registration = await operator.system.identity.register(
+      { body: { wallet, country: COUNTRY } },
+      { context: { idempotencyKey: `pof-register-${email}` } },
+    );
+    await settle(operator, registration, "    identity registration");
+  }
 
-for (const verdict of verdicts) {
-  const issued = await kyc.system.identity.claim.issue(
-    {
+  // An approved version is unique on national id and country within the
+  // organization, so the identifier is derived from the investor's own address.
+  const versions = await kyc.user.kyc.versions.list({ params: { userId }, query: {} });
+  const approved = versions.data.find((version) => version.status === "approved");
+  if (approved === undefined) {
+    const draft = await kyc.user.kyc.versions.create({
+      params: { userId },
       body: {
-        targetIdentityAddress: created.data.identity,
-        claim: { topic: verdict.topic, data: { claim: verdict.claim } },
+        overwriteDraft: true,
+        initialData: {
+          firstName: "Primary",
+          lastName: "Investor",
+          dob: "1988-04-12T00:00:00.000Z",
+          country: COUNTRY,
+          residencyStatus: "resident",
+          nationalId: `POF-${email}`,
+        },
       },
-    },
-    { context: { idempotencyKey: `pof-claim-${verdict.topic}-${email}` } },
-  );
-  await settle(kyc, issued, `claim ${verdict.topic}`);
+    });
+    await kyc.user.kyc.version.submit({ params: { versionId: draft.data.id } });
+    const reviewed = await kyc.user.kyc.version.approve({
+      params: { versionId: draft.data.id },
+      body: {},
+    });
+    console.log(`    kyc profile version ${draft.data.versionNumber}: ${reviewed.data.status}`);
+  } else {
+    console.log(`    kyc profile version ${approved.versionNumber}: already approved`);
+  }
+
+  // The claim values are not free text. `knowYourCustomer` carries the content
+  // hash of the approved version, which binds the claim on chain to the exact
+  // record the reviewer approved; every other investor topic is a boolean
+  // auto-claim and takes the literal "true".
+  const profile = await kyc.user.kyc.profile.read({ params: { userId } });
+  const contentHash = profile.data.approvedVersion?.contentHash;
+  if (contentHash === null || contentHash === undefined) {
+    throw new Error("The approved KYC version carries no content hash.");
+  }
+
+  const alreadyClaimed = await claimedTopicIds(kyc, identity.address);
+  for (const topic of REQUIRED_TOPICS) {
+    const topicId = topicIds.get(topic);
+    if (topicId !== undefined && alreadyClaimed.has(topicId)) {
+      console.log(`    claim ${topic}: already on the identity`);
+      continue;
+    }
+    const issued = await kyc.system.identity.claim.issue(
+      {
+        body: {
+          targetIdentityAddress: identity.address,
+          claim: {
+            topic,
+            data: { claim: topic === "knowYourCustomer" ? contentHash : "true" },
+          },
+        },
+      },
+      { context: { idempotencyKey: `pof-claim-${topic}-${email}` } },
+    );
+    await settle(kyc, issued, `    claim ${topic}`);
+  }
 }
 
-const history = await kyc.system.identity.claim.history({
-  params: { identityAddress: created.data.identity },
-  query: {},
-});
-console.log(`  claim history: ${history.data.length} event(s)`);
-for (const event of history.data) {
-  console.log(`    block ${event.blockNumber}  ${event.eventName}  ${event.topic}`);
-}
-
-const investor: Party = {
-  email,
-  userId: created.data.id,
-  wallet: created.data.wallet,
-  identity: created.data.identity,
-};
-const others = (readState().investors ?? []).filter((party) => party.email !== email);
-writeState({ investors: [...others, investor] });
-console.log(
-  `\nInvestor onboarded (${others.length + 1} on file). Run flow:03 again with another email, then flow:04.`,
-);
+console.log(`\n${INVESTOR_EMAILS.length} investor(s) onboarded. Run flow:04 next.`);
