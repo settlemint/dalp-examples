@@ -12,7 +12,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type { HistoricalBalance, HolderBalance, UserAssets } from "./lib/responses.ts";
 import { requireState } from "./lib/state.ts";
 import { trimZeros } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
@@ -23,26 +22,34 @@ const mint = requireState("mint", "flow:08");
 const dalp = clientFor("reporting");
 heading("Flow 9 — After settlement", "reporting");
 
-const portfolio: UserAssets = await dalp.user.assets({ query: {} });
+// The historical read is a statement about one block, so it needs the block the
+// mint settled in. Flow 8 records it.
+const mintBlock = mint.blockNumber;
+if (mintBlock === null) {
+  throw new Error("The mint in state.json carries no block number. Run flow:08 again.");
+}
+
+const portfolio = await dalp.user.assets({ query: {} });
 console.log(`  the reporting account holds ${portfolio.data.length} asset row(s) of its own`);
 
 console.log(`\n  holder register for ${token.address}`);
 console.log(
-  `  ${"investor".padEnd(34)}${"balance".padEnd(12)}${"frozen".padEnd(12)}at block ${mint.blockNumber ?? "?"}`,
+  `  ${"investor".padEnd(34)}${"balance".padEnd(12)}${"frozen".padEnd(12)}at block ${mintBlock}`,
 );
 for (const investor of investors) {
-  const current: HolderBalance = await dalp.token.holder({
+  const current = await dalp.token.holder({
     params: { tokenAddress: token.address },
     query: { holderAddress: investor.wallet },
   });
-  const atMint: HistoricalBalance = await dalp.token.historicalBalanceAtBlockByHolder({
+  const atMint = await dalp.token.historicalBalanceAtBlockByHolder({
     params: { tokenAddress: token.address, holderAddress: investor.wallet },
-    query: { atBlock: Number(mint.blockNumber) },
+    query: { atBlock: mintBlock },
   });
+  // Amounts come back as a string or a number depending on the field's width.
   const holder = current.data.holder;
   console.log(
-    `  ${investor.email.padEnd(34)}${trimZeros(holder?.value ?? "0").padEnd(12)}` +
-      `${trimZeros(holder?.frozen ?? "0").padEnd(12)}${trimZeros(atMint.data.balance)}`,
+    `  ${investor.email.padEnd(34)}${trimZeros(String(holder?.value ?? 0)).padEnd(12)}` +
+      `${trimZeros(String(holder?.frozen ?? 0)).padEnd(12)}${trimZeros(String(atMint.data.balance))}`,
   );
 }
 

@@ -23,16 +23,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type {
-  AssetTypeTemplates,
-  CreatedToken,
-  CurrentUser,
-  SystemComplianceModules,
-  TokenComplianceModules,
-  TopicSchemes,
-  TransactionStatus,
-  UploadTarget,
-} from "./lib/responses.ts";
 import { writeState } from "./lib/state.ts";
 import { baseUnits } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
@@ -60,10 +50,14 @@ const symbol = process.argv[2] ?? "POCA";
 const dalp = clientFor("issuer");
 heading("Flow 4 — Create the asset", "issuer");
 
-const settlementAccount: CurrentUser = await clientFor("settlement").user.me({});
-console.log(`  settlement wallet ${settlementAccount.data.wallet}`);
+const settlementAccount = await clientFor("settlement").user.me({});
+const settlementWallet = settlementAccount.data.wallet;
+if (settlementWallet === null || settlementWallet === undefined) {
+  throw new Error("The settlement service account has no wallet. Open it once in the Console.");
+}
+console.log(`  settlement wallet ${settlementWallet}`);
 
-const templates: AssetTypeTemplates = await dalp.settings.assetTypeTemplates.list({ query: {} });
+const templates = await dalp.settings.assetTypeTemplates.list({ query: {} });
 const template = templates.data.find((row) => row.id === TEMPLATE);
 if (template === undefined) {
   throw new Error(
@@ -72,7 +66,7 @@ if (template === undefined) {
 }
 console.log(`  template ${template.id} (${template.name})`);
 
-const modules: SystemComplianceModules = await dalp.system.compliance.list({ query: {} });
+const modules = await dalp.system.compliance.list({ query: {} });
 const moduleAddress = (typeId: string): string => {
   const row = modules.data.find((entry) => entry.typeId === typeId);
   if (row === undefined) {
@@ -81,7 +75,7 @@ const moduleAddress = (typeId: string): string => {
   return row.module;
 };
 
-const schemes: TopicSchemes = await dalp.system.claimTopics.list({ query: {} });
+const schemes = await dalp.system.claimTopics.list({ query: {} });
 const [kycTopic, amlTopic] = ["knowYourCustomer", "antiMoneyLaundering"].map((topic) => {
   const scheme = schemes.data.find((row) => key(row.name) === key(topic));
   if (scheme === undefined) {
@@ -90,7 +84,7 @@ const [kycTopic, amlTopic] = ["knowYourCustomer", "antiMoneyLaundering"].map((to
   return scheme.topicId;
 });
 
-const created: CreatedToken = await dalp.token.create(
+const created = await dalp.token.create(
   {
     body: {
       type: "dalp-asset",
@@ -101,9 +95,7 @@ const created: CreatedToken = await dalp.token.create(
       countryCode: "784",
       basePrice: "100.00",
       priceCurrency: "AED",
-      initialPermissions: [
-        { account: settlementAccount.data.wallet, roles: ["supplyManagement", "emergency"] },
-      ],
+      initialPermissions: [{ account: settlementWallet, roles: ["supplyManagement", "emergency"] }],
       // "holds the KYC claim AND holds the AML claim", written the way you would
       // say it. Every node carries a value; the operators use "0".
       initialModulePairs: [
@@ -131,9 +123,9 @@ const created: CreatedToken = await dalp.token.create(
 // A create either answers inline with the deployed token or hands back a queue
 // handle; the address is read from whichever arrived.
 const deployTransaction = await settle(dalp, created, "token deployment");
-let tokenAddress = created.data?.id;
+let tokenAddress = "data" in created ? created.data.id : undefined;
 if (tokenAddress === undefined && deployTransaction !== undefined) {
-  const deployment: TransactionStatus = await dalp.transaction.status({
+  const deployment = await dalp.transaction.status({
     params: { transactionId: deployTransaction },
   });
   tokenAddress = deployment.data.result?.tokenAddress;
@@ -143,7 +135,7 @@ if (tokenAddress === undefined) {
 }
 console.log(`  token ${tokenAddress}`);
 
-const upload: UploadTarget = await dalp.token.documents.getUploadUrl({
+const upload = await dalp.token.documents.getUploadUrl({
   params: { tokenAddress },
   body: PROSPECTUS,
 });
@@ -161,7 +153,7 @@ console.log(`  presigned upload ${upload.data.objectKey}`);
 // Calling it before the bytes land answers DALP-0326: the platform reads the
 // object back and refuses to record a document that is not there.
 
-const installed: TokenComplianceModules = await dalp.token.compliance({ params: { tokenAddress } });
+const installed = await dalp.token.compliance({ params: { tokenAddress } });
 console.log(`  compliance modules on the token: ${installed.data.complianceModuleConfigs.length}`);
 for (const config of installed.data.complianceModuleConfigs) {
   const state = config.isActive === undefined ? "attached" : `active: ${config.isActive}`;

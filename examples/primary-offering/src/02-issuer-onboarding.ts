@@ -13,7 +13,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type { CreatedUser, RegistrationStatus } from "./lib/responses.ts";
 import { writeState } from "./lib/state.ts";
 import { settle } from "./lib/wait.ts";
 
@@ -24,7 +23,7 @@ const email = process.argv[2] ?? "issuer@primary-offering.example";
 const dalp = clientFor("operator");
 heading("Flow 2 — Issuer onboarding", "operator");
 
-const created: CreatedUser = await dalp.user.create(
+const created = await dalp.user.create(
   { body: { email, name: "Primary Offering Issuer" } },
   { context: { idempotencyKey: `pof-user-${email}` } },
 );
@@ -32,7 +31,7 @@ console.log(`  user     ${created.data.id}`);
 console.log(`  wallet   ${created.data.wallet}`);
 console.log(`  identity ${created.data.identity}`);
 
-const registered: RegistrationStatus = await dalp.system.identity.registrationStatus({
+const registered = await dalp.system.identity.registrationStatus({
   query: { wallet: created.data.wallet },
 });
 console.log(`  registration: ${registered.data.status}`);

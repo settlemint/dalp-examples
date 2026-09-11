@@ -60,8 +60,8 @@ bun run flow:09
 | 3    | `src/03-investor-onboarding.ts` | `DALP_OPERATOR_KEY`, then `DALP_KYC_KEY`                   | The same, plus the KYC and AML claims signed onto the identity by the claim issuer.                                                                                          |
 | 4    | `src/04-create-asset.ts`        | `DALP_ISSUER_KEY`                                          | Deploys the token paused with zero supply, grants settlement its roles, installs the identity-verification rule and the offering ceiling, asks for a document upload target. |
 | 5    | `src/05-go-live-price.ts`       | `DALP_ISSUER_KEY`                                          | Stores the offering price and reads it back.                                                                                                                                 |
-| 6    | `src/06-order-eligibility.ts`   | `DALP_REPORTING_KEY`                                       | The registry pre-filter, then the authoritative transfer simulation. Needs DALP 3.2 for the second half.                                                                     |
-| 7    | `src/07-allocation-recheck.ts`  | `DALP_REPORTING_KEY`                                       | Re-simulates every approved allocation line immediately before settlement. Needs DALP 3.2.                                                                                   |
+| 6    | `src/06-order-eligibility.ts`   | `DALP_REPORTING_KEY`                                       | The registry pre-filter on every candidate. The authoritative transfer simulation needs DALP 3.2 and is carried as a comment.                                                |
+| 7    | `src/07-allocation-recheck.ts`  | `DALP_REPORTING_KEY`                                       | Re-checks every approved allocation line immediately before settlement and writes it for flow 8. The 3.2 re-simulation is carried as a comment.                              |
 | 8    | `src/08-settlement.ts`          | `DALP_SETTLEMENT_KEY`                                      | Unpauses, mints the allocation, reads the transaction record, and shows the replay answering with that same mint instead of a second one.                                    |
 | 9    | `src/09-after-settlement.ts`    | `DALP_REPORTING_KEY`, one write from `DALP_SETTLEMENT_KEY` | Reads the holder register now and at the mint block, then pauses the token again.                                                                                            |
 
@@ -70,6 +70,12 @@ bun run flow:09
 **The SDK is the only client.** Every call goes through `@settlemint/dalp-sdk`.
 There is no `fetch`, no hand-built HTTP client and no REST path anywhere in
 `src/`.
+
+**Every response type comes from the SDK.** No request or response shape is
+written by hand. The pin is `3.1.20`, the first published release whose `.d.ts`
+files are self-contained; up to `3.1.19` they re-exported an unpublished
+workspace package, which under `skipLibCheck` silently degraded the client to
+`any` and left every call unchecked.
 
 **One client per service account.** `src/lib/client.ts` builds a client from the
 key of the account making the call. There is no `X-Participant` header: the
@@ -106,17 +112,12 @@ the same `objectKey`; the flow carries that call as a comment. Confirming before
 the bytes land answers `DALP-0326`, because the platform reads the object back
 before it records anything.
 
-**Detecting the platform line.** `transfer-simulate` arrived with DALP 3.2. The
-platform publishes no version route, and the client is a proxy that answers for
-any property name, so the line cannot be probed. Set `DALP_PLATFORM_LINE` in
-`.env`. On `3.1`, flows 6 and 7 print the notice and stop; flow 7 still writes
-its allocation so flow 8 can settle it. `recipient-eligibility`, the pre-filter
-half of flow 6, is carried by the 3.1 contract and runs on either line.
-
-Setting `DALP_PLATFORM_LINE=3.2` also needs the `@settlemint/dalp-sdk` pin
-moved to the 3.2 line. This workspace pins `3.1.19`, whose contract carries no
-transfer-simulate procedure, so the client refuses that call locally before it
-reaches the platform.
+**The transfer simulation.** `transfer-simulate` arrived with DALP 3.2 and this
+workspace pins `@settlemint/dalp-sdk` to the 3.1 line the sandbox runs. The 3.1
+contract carries no such procedure, so the call does not exist on the client and
+would not compile. Flows 6 and 7 run the `recipient-eligibility` pre-filter,
+which the 3.1 contract does carry, and write the 3.2 call out as a comment next
+to it. Move the pin to 3.2 against a 3.2 platform and the comment is the code.
 
 ## What a sandbox taught these examples
 

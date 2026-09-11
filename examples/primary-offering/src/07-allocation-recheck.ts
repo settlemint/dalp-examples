@@ -7,22 +7,20 @@
  * exact delivery clear? Eligibility can lapse between the order and the mint,
  * and a line that fails here is cheaper than a reverted settlement.
  *
+ * That question is transfer-simulate, which arrived with DALP 3.2. On the 3.1
+ * line this flow re-reads the registry pre-filter instead and writes the
+ * approved allocation to state.json for flow 8 to mint.
+ *
  * The approved allocation is represented here by a hard-coded size per
- * investor, and it is written to state.json for flow 8 to mint.
+ * investor.
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import { hasTransferSimulate, skipUnless32 } from "./lib/platform.ts";
-import type { TransferSimulation } from "./lib/responses.ts";
 import { requireState, writeState } from "./lib/state.ts";
 import type { Allocation } from "./lib/state.ts";
-import { baseUnits } from "./lib/units.ts";
 
 /** The units your allocation engine approved for each investor. */
 const ALLOCATED_UNITS = "1000";
-
-/** A settlement mint has no sender; the chain evaluates it from the zero address. */
-const MINT_SENDER = "0x0000000000000000000000000000000000000000";
 
 const token = requireState("token", "flow:04");
 const investors = requireState("investors", "flow:03");
@@ -36,24 +34,28 @@ const allocations: readonly Allocation[] = investors.map((investor) => ({
 writeState({ allocations });
 console.log(`  approved allocation: ${allocations.length} line(s) of ${ALLOCATED_UNITS} units`);
 
-if (!hasTransferSimulate()) {
-  skipUnless32("Flow 7");
-  console.log("  The allocation is written to state.json all the same, so flow:08 can settle it.");
-} else {
-  for (const allocation of allocations) {
-    const simulation: TransferSimulation = await dalp.token.transferSimulate({
-      params: { tokenAddress: token.address },
-      query: {
-        from: MINT_SENDER,
-        to: allocation.wallet,
-        amount: baseUnits(allocation.units, token.decimals),
-      },
-    });
-    const blockers = simulation.data.blockers.map((blocker) => blocker.code).join(", ");
-    console.log(
-      `  ${allocation.wallet}  ${allocation.units} units  ${simulation.data.verdict}  ${blockers}`.trimEnd(),
-    );
-  }
+for (const allocation of allocations) {
+  const eligibility = await dalp.token.recipientEligibility({
+    params: { tokenAddress: token.address },
+    query: { address: allocation.wallet, action: "mint" },
+  });
+  const verdict = eligibility.data.eligible ? "in the registry" : "not in the registry";
+  console.log(`  ${allocation.wallet}  ${allocation.units} units  ${verdict}`);
 }
 
+// The 3.2 re-check, per approved line, replacing the pre-filter above:
+//
+//   const simulation = await dalp.token.transferSimulate({
+//     params: { tokenAddress: token.address },
+//     query: {
+//       from: "0x0000000000000000000000000000000000000000",
+//       to: allocation.wallet,
+//       amount: baseUnits(allocation.units, token.decimals),
+//     },
+//   });
+//   // Submit the line only on simulation.data.verdict === "will-clear".
+
+console.log(
+  "\n  The transfer verdict needs DALP 3.2; this platform line answers the pre-filter only.",
+);
 console.log("\nSubmit only the lines that came back will-clear. Run flow:08 next.");

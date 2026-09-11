@@ -19,13 +19,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type {
-  ClaimEvents,
-  CreatedUser,
-  KycProfile,
-  KycVersion,
-  RegistrationStatus,
-} from "./lib/responses.ts";
 import { readState, writeState } from "./lib/state.ts";
 import type { Party } from "./lib/state.ts";
 import { settle } from "./lib/wait.ts";
@@ -37,7 +30,7 @@ const operator = clientFor("operator");
 const kyc = clientFor("kyc");
 heading("Flow 3 — Investor onboarding", "operator");
 
-const created: CreatedUser = await operator.user.create(
+const created = await operator.user.create(
   { body: { email, name: "Primary Offering Investor" } },
   { context: { idempotencyKey: `pof-user-${email}` } },
 );
@@ -45,7 +38,7 @@ console.log(`  user     ${created.data.id}`);
 console.log(`  wallet   ${created.data.wallet}`);
 console.log(`  identity ${created.data.identity}`);
 
-const registered: RegistrationStatus = await operator.system.identity.registrationStatus({
+const registered = await operator.system.identity.registrationStatus({
   query: { wallet: created.data.wallet },
 });
 console.log(`  registration: ${registered.data.status}`);
@@ -63,10 +56,9 @@ if (registered.data.status !== "ACTIVE") {
 
 // An approved version is unique on national id and country within the
 // organization, so the identifier is derived from the investor's own address.
-const draft: KycVersion = await kyc.user.kyc.versions.create({
+const draft = await kyc.user.kyc.versions.create({
   params: { userId: created.data.id },
   body: {
-    userId: created.data.id,
     overwriteDraft: true,
     initialData: {
       firstName: "Primary",
@@ -78,8 +70,8 @@ const draft: KycVersion = await kyc.user.kyc.versions.create({
     },
   },
 });
-await kyc.user.kyc.version.submit({ params: { versionId: draft.data.id }, body: {} });
-const reviewed: KycVersion = await kyc.user.kyc.version.approve({
+await kyc.user.kyc.version.submit({ params: { versionId: draft.data.id } });
+const reviewed = await kyc.user.kyc.version.approve({
   params: { versionId: draft.data.id },
   body: {},
 });
@@ -89,7 +81,7 @@ console.log(`  kyc profile version ${draft.data.versionNumber}: ${reviewed.data.
 // hash of the approved version, which binds the claim on chain to the exact
 // record the reviewer approved; every other investor topic is a boolean
 // auto-claim and takes the literal "true".
-const profile: KycProfile = await kyc.user.kyc.profile.read({
+const profile = await kyc.user.kyc.profile.read({
   params: { userId: created.data.id },
 });
 const contentHash = profile.data.approvedVersion?.contentHash;
@@ -116,7 +108,7 @@ for (const verdict of verdicts) {
   await settle(kyc, issued, `claim ${verdict.topic}`);
 }
 
-const history: ClaimEvents = await kyc.system.identity.claim.history({
+const history = await kyc.system.identity.claim.history({
   params: { identityAddress: created.data.identity },
   query: {},
 });

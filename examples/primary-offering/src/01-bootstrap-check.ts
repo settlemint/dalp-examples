@@ -9,7 +9,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type { TopicSchemes, TrustedIssuers } from "./lib/responses.ts";
 
 /** The two topics the offering's compliance rule will require. */
 const REQUIRED = ["knowYourCustomer", "antiMoneyLaundering"];
@@ -20,8 +19,8 @@ const key = (name: string): string => name.toLowerCase().replaceAll(/[^a-z0-9]/g
 const dalp = clientFor("reporting");
 heading("Flow 1 — Bootstrap check", "reporting");
 
-const schemes: TopicSchemes = await dalp.system.claimTopics.list({ query: {} });
-const issuers: TrustedIssuers = await dalp.system.trustedIssuers.list({ query: {} });
+const schemes = await dalp.system.claimTopics.list({ query: {} });
+const issuers = await dalp.system.trustedIssuers.list({ query: {} });
 
 let ready = true;
 for (const topic of REQUIRED) {

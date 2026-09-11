@@ -7,7 +7,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type { TokenPrice } from "./lib/responses.ts";
 import { requireState } from "./lib/state.ts";
 import { displayUnits } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
@@ -26,7 +25,7 @@ const priced = await dalp.token.setPrice(
 );
 await settle(dalp, priced, `price ${PRICE} ${CURRENCY}`);
 
-const stored: TokenPrice = await dalp.token.price({
+const stored = await dalp.token.price({
   params: { tokenAddress: token.address },
   query: { currency: CURRENCY },
 });

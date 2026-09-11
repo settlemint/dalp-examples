@@ -12,7 +12,6 @@
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import type { MintResult, TransactionStatus } from "./lib/responses.ts";
 import { requireState, writeState } from "./lib/state.ts";
 import { baseUnits } from "./lib/units.ts";
 import { settle } from "./lib/wait.ts";
@@ -48,7 +47,7 @@ if (mintTransaction === undefined) {
   );
 }
 
-const record: TransactionStatus = await dalp.transaction.status({
+const record = await dalp.transaction.status({
   params: { transactionId: mintTransaction },
 });
 console.log(`  transaction ${record.data.transactionId}`);
@@ -59,9 +58,14 @@ console.log(`    hash   ${record.data.transactionHash ?? "none"}`);
 // The replay does not queue a second mint and it does not hand back a second
 // handle either: the key already has a settled result, so the platform answers
 // with that result, carrying the hash of the transaction that produced it.
-const replayed: MintResult = await dalp.token.mint(mintRequest, {
+const replayed = await dalp.token.mint(mintRequest, {
   context: { idempotencyKey: mintKey },
 });
+if (!("meta" in replayed)) {
+  throw new Error(
+    `The replay under ${mintKey} queued a second mint instead of replaying the first.`,
+  );
+}
 const replayedHash = replayed.meta.txHashes[0];
 console.log(
   replayedHash === record.data.transactionHash

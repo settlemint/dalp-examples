@@ -10,20 +10,17 @@
  *
  * transfer-simulate is the authoritative check. It dry-runs the exact delivery
  * that settlement will make and answers will-clear or will-revert, with the
- * blockers and who can clear each one. It arrived with DALP 3.2.
+ * blockers and who can clear each one. It arrived with DALP 3.2, and the
+ * pinned SDK is on the 3.1 line, so the call is written out below rather than
+ * made. Until then, accept an order on the pre-filter and let flow 8 be the
+ * place compliance is enforced.
  */
 
 import { clientFor, heading } from "./lib/client.ts";
-import { hasTransferSimulate, skipUnless32 } from "./lib/platform.ts";
-import type { RecipientEligibility, TransferSimulation } from "./lib/responses.ts";
 import { requireState } from "./lib/state.ts";
-import { baseUnits } from "./lib/units.ts";
 
 /** What the investor asked for, in whole display units. */
 const ORDER_SIZE = "1000";
-
-/** A settlement mint has no sender; the chain evaluates it from the zero address. */
-const MINT_SENDER = "0x0000000000000000000000000000000000000000";
 
 const token = requireState("token", "flow:04");
 const investors = requireState("investors", "flow:03");
@@ -32,37 +29,32 @@ heading("Flow 6 — Order-time eligibility", "reporting");
 console.log(`  token ${token.address}, order size ${ORDER_SIZE} units`);
 
 for (const investor of investors) {
-  const eligibility: RecipientEligibility = await dalp.token.recipientEligibility({
+  const eligibility = await dalp.token.recipientEligibility({
     params: { tokenAddress: token.address },
     query: { address: investor.wallet, action: "mint" },
   });
-  console.log(`\n  ${investor.email}`);
-  console.log(
-    `    registry pre-filter: ${eligibility.data.eligible ? "in the registry" : "not in the registry"}`,
-  );
-
-  if (!hasTransferSimulate()) {
-    console.log("    transfer verdict:    unavailable on this platform line");
-    continue;
-  }
-
-  const simulation: TransferSimulation = await dalp.token.transferSimulate({
-    params: { tokenAddress: token.address },
-    query: {
-      from: MINT_SENDER,
-      to: investor.wallet,
-      amount: baseUnits(ORDER_SIZE, token.decimals),
-    },
-  });
-  console.log(`    transfer verdict:    ${simulation.data.verdict}`);
-  for (const blocker of simulation.data.blockers) {
-    console.log(
-      `      blocked on ${blocker.code} (${blocker.party}, cleared by ${blocker.remediationClass})`,
-    );
-  }
+  const verdict = eligibility.data.eligible ? "in the registry" : "not in the registry";
+  console.log(`  ${investor.email.padEnd(40)}${verdict}`);
 }
 
-if (!hasTransferSimulate()) {
-  skipUnless32("The authoritative half of flow 6");
-}
+// On a 3.2 platform, with the @settlemint/dalp-sdk pin moved to the 3.2 line,
+// this is the read that decides whether the order is accepted. A settlement
+// mint has no sender, so the chain evaluates it from the zero address:
+//
+//   const simulation = await dalp.token.transferSimulate({
+//     params: { tokenAddress: token.address },
+//     query: {
+//       from: "0x0000000000000000000000000000000000000000",
+//       to: investor.wallet,
+//       amount: baseUnits(ORDER_SIZE, token.decimals),
+//     },
+//   });
+//   console.log(simulation.data.verdict); // will-clear or will-revert
+//   for (const blocker of simulation.data.blockers) {
+//     console.log(blocker.code, blocker.party, blocker.remediationClass);
+//   }
+
+console.log(
+  "\n  The transfer verdict needs DALP 3.2; this platform line answers the pre-filter only.",
+);
 console.log("\nAccept an order only on a will-clear verdict. Run flow:07 next.");

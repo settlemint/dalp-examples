@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@settlemint/dalp-sdk": "3.1.19"
+    "@settlemint/dalp-sdk": "3.1.20"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

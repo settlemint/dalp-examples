@@ -77,7 +77,7 @@
       "name": "@dalp-examples/primary-offering",
       "version": "0.0.1",
       "dependencies": {
-        "@settlemint/dalp-sdk": "3.1.19",
+        "@settlemint/dalp-sdk": "3.1.20",
       },
       "devDependencies": {
         "@types/node": "^22.0.0",
@@ -804,7 +804,7 @@
 
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 
-    "@dalp-examples/primary-offering/@settlemint/dalp-sdk": ["@settlemint/dalp-sdk@3.1.19", "", { "dependencies": { "@better-auth/api-key": "1.6.19", "@better-auth/passkey": "1.6.19", "@orpc/client": "1.14.6", "@orpc/contract": "1.14.6", "@orpc/openapi-client": "1.14.6", "better-auth": "1.6.19", "currency-codes": "2.2.0", "date-fns": "4.4.0", "dnum": "2.17.0", "iso-3166": "4.4.0", "standardwebhooks": "1.0.0", "viem": "2.52.2", "zod": "4.4.3" } }, "sha512-k5h1qIDoR0/JlZOlEiXZYhhBPt6/hGVYBNo5KdKJ+Ppoe4FYArh/BAWpYmixjcqQCdeKLW7W/H5C8HpMbzi6bQ=="],
+    "@dalp-examples/primary-offering/@settlemint/dalp-sdk": ["@settlemint/dalp-sdk@3.1.20", "", { "dependencies": { "@better-auth/api-key": "1.6.19", "@better-auth/passkey": "1.6.19", "@orpc/client": "1.14.6", "@orpc/contract": "1.14.6", "@orpc/openapi-client": "1.14.6", "better-auth": "1.6.19", "currency-codes": "2.2.0", "date-fns": "4.4.0", "dnum": "2.17.0", "iso-3166": "4.4.0", "standardwebhooks": "1.0.0", "viem": "2.52.2", "zod": "4.4.3" } }, "sha512-Xp+DPvhjZTxeMkNEdyEq/JFTj+y8tJ4Q+Jd86VOkb0Pjn8mcsiMHHPvVaGfznCGwsTfuXJWh0EAErEztx7gzzg=="],
 
     "@noble/curves/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
