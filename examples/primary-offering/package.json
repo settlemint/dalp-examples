@@ -14,6 +14,7 @@
     "flow:07": "bun run src/07-allocation-recheck.ts",
     "flow:08": "bun run src/08-settlement.ts",
     "flow:09": "bun run src/09-after-settlement.ts",
+    "build": "bun build src/*.ts --outdir dist --target bun --packages external",
     "lint": "oxlint .",
     "typecheck": "tsc --noEmit"
   },
