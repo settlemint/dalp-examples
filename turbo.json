@@ -1,6 +1,20 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["DALP_API_URL", "DALP_API_KEY", "DALP_ORG_ID"],
+  "globalEnv": [
+    "DALP_API_URL",
+    "DALP_API_KEY",
+    "DALP_ORG_ID",
+    "DALP_URL",
+    "DALP_EXECUTOR",
+    "DALP_OPERATOR_KEY",
+    "DALP_ISSUER_KEY",
+    "DALP_KYC_KEY",
+    "DALP_SETTLEMENT_KEY",
+    "DALP_REPORTING_KEY",
+    "POF_SYMBOL",
+    "POF_ISSUER",
+    "POF_INVESTORS"
+  ],
   "tasks": {
     "dev": {
       "cache": false,

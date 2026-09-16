@@ -10,6 +10,7 @@ dalp-examples/
 ├── references/       ← per-domain SDK reference docs
 ├── apps/issuer/      ← localhost:4321
 ├── apps/investor/    ← localhost:4322
+├── examples/         ← headless scripts, one per flow
 └── …
 ```
 
@@ -26,6 +27,18 @@ bun run dev
 Open <http://localhost:4321> for the issuer, <http://localhost:4322> for the investor.
 
 On a fresh checkout, both apps show an amber "DALP backend not reachable" connection badge until you fill `.env.local` with `DALP_API_URL`, `DALP_API_KEY`, and `DALP_ORG_ID`.
+
+## Headless examples
+
+`examples/primary-offering/` is one runnable script per flow of a primary
+offering, from the bootstrap check through settlement and the register read.
+No UI, no framework: each file is a Bun script that calls the SDK and prints
+what it did. See [`examples/primary-offering/README.md`](examples/primary-offering/README.md).
+
+```bash
+cp examples/primary-offering/.env.example examples/primary-offering/.env
+cd examples/primary-offering && bun run flow:01
+```
 
 ## Stack
 

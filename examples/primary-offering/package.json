@@ -1,0 +1,28 @@
+{
+  "name": "@dalp-examples/primary-offering",
+  "version": "0.0.1",
+  "private": true,
+  "description": "One runnable example per flow of the primary offering on DALP",
+  "type": "module",
+  "scripts": {
+    "flow:01": "bun run src/01-bootstrap-check.ts",
+    "flow:02": "bun run src/02-issuer-onboarding.ts",
+    "flow:03": "bun run src/03-investor-onboarding.ts",
+    "flow:04": "bun run src/04-create-asset.ts",
+    "flow:05": "bun run src/05-go-live-price.ts",
+    "flow:06": "bun run src/06-order-eligibility.ts",
+    "flow:07": "bun run src/07-allocation-recheck.ts",
+    "flow:08": "bun run src/08-settlement.ts",
+    "flow:09": "bun run src/09-after-settlement.ts",
+    "build": "bun build src/*.ts --outdir dist --target bun --packages external",
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@settlemint/dalp-sdk": "3.1.20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.3"
+  }
+}
