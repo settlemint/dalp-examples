@@ -28,7 +28,7 @@ interface AsyncAccepted {
   readonly statusUrl: string;
 }
 
-function asyncHandle(response: unknown): AsyncAccepted | undefined {
+function asyncHandle<Response>(response: Response): AsyncAccepted | undefined {
   if (typeof response !== "object" || response === null) {
     return undefined;
   }
@@ -42,9 +42,9 @@ function asyncHandle(response: unknown): AsyncAccepted | undefined {
  * Returns the transaction id for a queued write, or `undefined` for a write the
  * platform answered inline. Throws unless the transaction reached COMPLETED.
  */
-export async function settle(
+export async function settle<Response>(
   dalp: DalpClient,
-  response: unknown,
+  response: Response,
   label: string,
 ): Promise<string | undefined> {
   const handle = asyncHandle(response);

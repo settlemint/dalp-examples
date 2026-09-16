@@ -1,3 +1,4 @@
+// oxlint-disable no-await-in-loop
 /**
  * Flow 9 — After settlement (svc-reporting, one write from svc-settlement).
  *

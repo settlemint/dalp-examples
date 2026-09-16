@@ -1,3 +1,4 @@
+// oxlint-disable no-await-in-loop
 /**
  * Flow 3 — Investor onboarding (svc-operator, then svc-kyc).
  *

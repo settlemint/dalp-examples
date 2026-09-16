@@ -1,3 +1,4 @@
+// oxlint-disable no-await-in-loop
 /**
  * Flow 6 — Order-time eligibility (read-only, svc-reporting).
  *

@@ -1,3 +1,4 @@
+// oxlint-disable no-await-in-loop
 /**
  * Flow 7 — Pre-settlement re-check (read-only, svc-reporting).
  *
