@@ -1,0 +1,24 @@
+examples/primary-offering/src/03-investor-onboarding.ts
+  h_05f38bc98daccf 1
+examples/primary-offering/src/08-settlement.ts
+  h_05f38bc98daccf 1
+examples/primary-offering/src/lib/wait.ts
+  h_05f38bc98daccf 31,45,47
+examples/primary-offering/src/06-order-eligibility.ts
+  h_05f38bc98daccf 1
+examples/primary-offering/src/07-allocation-recheck.ts
+  h_05f38bc98daccf 1
+examples/primary-offering/src/09-after-settlement.ts
+  h_05f38bc98daccf 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cb29a48a4f7b1ad81b1f34a8a6d44744a645eb9f",
+  "prompts": {},
+  "humans": {
+    "h_05f38bc98daccf": {
+      "author": "Jan Bevers <jan@settlemint.com>"
+    }
+  }
+}
