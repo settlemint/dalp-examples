@@ -1,0 +1,19 @@
+examples/primary-offering/package.json
+  s_721236dc3f5c57::t_01f800605459d8 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "01bb28ea5d92280b6e5c06fcbeafcf4dd43f45b3",
+  "prompts": {},
+  "sessions": {
+    "s_721236dc3f5c57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1b40781f-58c7-4c6c-b98d-9ba35bf56d56",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Jan Bevers <jan@settlemint.com>"
+    }
+  }
+}
