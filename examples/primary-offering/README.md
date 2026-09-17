@@ -73,6 +73,27 @@ POF_INVESTORS=carol@primary-offering.example,dave@primary-offering.example \
 | 8    | `src/08-settlement.ts`          | `DALP_SETTLEMENT_KEY`                                      | Reads the register, unpauses if paused, mints only the lines that are short of their allocation, reads the transaction record back.                                   |
 | 9    | `src/09-after-settlement.ts`    | `DALP_REPORTING_KEY`, one write from `DALP_SETTLEMENT_KEY` | Finds the mint block in the token's event log, reads the holder register now and at that block, then pauses the token again.                                          |
 
+## Calling the REST API directly
+
+If you call DALP over plain HTTP (Postman, `curl`, your own backend) instead of
+through the SDK, [`playbooks/`](./playbooks) carries the same nine flows as REST
+API playbooks: the HTTP method and path under `/api/v2`, headers, body, the
+response fields the next step needs, and what to check before moving on. Every
+mapping was verified against the DALP v3.1.21 API contract.
+
+| Playbook                                                       | File                                                               |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Introduction: base URL, headers, service accounts, 202 polling | [00-introduction.md](./playbooks/00-introduction.md)               |
+| 1 Bootstrap check                                              | [01-bootstrap-check.md](./playbooks/01-bootstrap-check.md)         |
+| 2 Issuer onboarding                                            | [02-issuer-onboarding.md](./playbooks/02-issuer-onboarding.md)     |
+| 3 Investor onboarding                                          | [03-investor-onboarding.md](./playbooks/03-investor-onboarding.md) |
+| 4 Create the asset                                             | [04-create-asset.md](./playbooks/04-create-asset.md)               |
+| 5 Go live and set the price                                    | [05-go-live-price.md](./playbooks/05-go-live-price.md)             |
+| 6 Order-time eligibility                                       | [06-order-eligibility.md](./playbooks/06-order-eligibility.md)     |
+| 7 Pre-settlement re-check                                      | [07-allocation-recheck.md](./playbooks/07-allocation-recheck.md)   |
+| 8 Settlement                                                   | [08-settlement.md](./playbooks/08-settlement.md)                   |
+| 9 After settlement                                             | [09-after-settlement.md](./playbooks/09-after-settlement.md)       |
+
 ## What every script does the same way
 
 **The SDK is the only client.** Every call goes through `@settlemint/dalp-sdk`.

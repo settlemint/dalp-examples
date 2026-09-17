@@ -40,6 +40,10 @@ cp examples/primary-offering/.env.example examples/primary-offering/.env
 cd examples/primary-offering && bun run flow:01
 ```
 
+Calling the REST API directly instead of the SDK? The same nine flows are written
+out as REST API playbooks under
+[`examples/primary-offering/playbooks/`](examples/primary-offering/playbooks).
+
 ## Stack
 
 - Turborepo + Bun
